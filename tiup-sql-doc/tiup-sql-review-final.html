@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>tiup sql 综合评审报告</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">body{font-family:"Segoe UI",system-ui,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1a1a1a}
+h1{border-bottom:2px solid #4472C4;padding-bottom:.3em;color:#4472C4}
+h2{border-bottom:1px solid #ddd;padding-bottom:.2em;margin-top:2em}
+h3{color:#5b9bd5}
+table{border-collapse:collapse;width:100%;margin:1em 0}
+th,td{border:1px solid #ddd;padding:.5em .75em;text-align:left}
+th{background:#f5f5f5;font-weight:600}
+tr:nth-child(even){background:#fafafa}
+code{background:#f4f4f4;padding:.15em .3em;border-radius:3px;font-size:.9em}
+pre{background:#2d2d2d;color:#f8f8f2;padding:1em;border-radius:6px;overflow-x:auto}
+pre code{background:none;padding:0;color:inherit}
+blockquote{border-left:4px solid #4472C4;padding:.5em 1em;margin:1em 0;background:#f9f9f9}
+ul,ol{padding-left:1.5em}
+#TOC{background:#f5f7fa;padding:1em 1.5em;border-radius:8px;margin-bottom:2em}
+#TOC ul{list-style:none;padding-left:0}
+#TOC>ul{padding-left:1em}
+#TOC li{margin:.3em 0}
+a{color:#4472C4;text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid #ddd;margin:2em 0}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">tiup sql 综合评审报告</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#tiup-sql-综合评审报告" id="toc-tiup-sql-综合评审报告">tiup
+sql 综合评审报告</a>
+<ul>
+<li><a href="#评审概要" id="toc-评审概要">评审概要</a></li>
+<li><a href="#高严重度high-安全问题" id="toc-高严重度high-安全问题">1.
+高严重度（High — 安全问题）</a>
+<ul>
+<li><a href="#s1.-密码以明文存储在内存和环境变量中进程-dump-可泄露" id="toc-s1.-密码以明文存储在内存和环境变量中进程-dump-可泄露">S1.
+密码以明文存储在内存和环境变量中，进程 dump 可泄露</a></li>
+</ul></li>
+<li><a href="#中等严重度medium-功能逻辑健壮性" id="toc-中等严重度medium-功能逻辑健壮性">2. 中等严重度（Medium —
+功能/逻辑/健壮性）</a>
+<ul>
+<li><a href="#m1.-splitstatements-在-sql-字符串内的分号处错误分割" id="toc-m1.-splitstatements-在-sql-字符串内的分号处错误分割">M1.
+<code>splitStatements()</code> 在 SQL 字符串内的分号处错误分割</a></li>
+<li><a href="#m2.-tls-配置名称使用-hostport-拼接host-可能含特殊字符" id="toc-m2.-tls-配置名称使用-hostport-拼接host-可能含特殊字符">M2. TLS
+配置名称使用 host:port 拼接，host 可能含特殊字符</a></li>
+<li><a href="#m3.-applyflagoverrides-逻辑与设计意图矛盾" id="toc-m3.-applyflagoverrides-逻辑与设计意图矛盾">M3.
+<code>applyFlagOverrides()</code> 逻辑与设计意图矛盾</a></li>
+<li><a href="#m4.-config_test.go-环境变量恢复存在-bug" id="toc-m4.-config_test.go-环境变量恢复存在-bug">M4.
+<code>config_test.go</code> 环境变量恢复存在 bug</a></li>
+</ul></li>
+<li><a href="#低严重度low-代码质量完整性" id="toc-低严重度low-代码质量完整性">3. 低严重度（Low —
+代码质量/完整性）</a>
+<ul>
+<li><a href="#l1.-全局可变-flags-变量导致测试困难" id="toc-l1.-全局可变-flags-变量导致测试困难">L1. 全局可变
+<code>flags</code> 变量导致测试困难</a></li>
+<li><a href="#l2.-execquery-使用-query-而非-exec-处理非-select-语句" id="toc-l2.-execquery-使用-query-而非-exec-处理非-select-语句">L2.
+<code>execQuery()</code> 使用 <code>Query()</code> 而非
+<code>Exec()</code> 处理非 SELECT 语句</a></li>
+<li><a href="#l3.-execfile-在-i-元命令中不处理目录路径" id="toc-l3.-execfile-在-i-元命令中不处理目录路径">L3.
+<code>execFile()</code> 在 <code>\i</code>
+元命令中不处理目录路径</a></li>
+<li><a href="#l4.-formatvalue-对-byte-使用-string-转换可能产生非-utf-8-输出" id="toc-l4.-formatvalue-对-byte-使用-string-转换可能产生非-utf-8-输出">L4.
+<code>formatValue()</code> 对 <code>[]byte</code> 使用
+<code>string()</code> 转换可能产生非 UTF-8 输出</a></li>
+<li><a href="#l5.-测试覆盖仍不足延续第一轮-l5" id="toc-l5.-测试覆盖仍不足延续第一轮-l5">L5. 测试覆盖仍不足（延续第一轮
+L5）</a></li>
+</ul></li>
+<li><a href="#第一轮遗留问题状态" id="toc-第一轮遗留问题状态">4.
+第一轮遗留问题状态</a></li>
+<li><a href="#安全合规检查" id="toc-安全合规检查">5.
+安全合规检查</a></li>
+<li><a href="#设计文档符合度" id="toc-设计文档符合度">6.
+设计文档符合度</a></li>
+<li><a href="#总结与建议" id="toc-总结与建议">7. 总结与建议</a>
+<ul>
+<li><a href="#整体评价" id="toc-整体评价">整体评价</a></li>
+<li><a href="#需要关注的问题" id="toc-需要关注的问题">需要关注的问题</a></li>
+<li><a href="#结论" id="toc-结论">结论</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="tiup-sql-综合评审报告">tiup sql 综合评审报告</h1>
+<p><strong>评审人</strong>：全能表妹（安全审计）
+<strong>评审时间</strong>：2026-05-18
+<strong>评审范围</strong>：<code>components/sql/</code>
+全部源码及测试文件（15 源文件 + 5 测试文件）
+<strong>设计文档</strong>：<code>output/tiup-sql-design.md</code>
+<strong>第一轮审阅</strong>：元芳（已修复 6 个阻断/高严重度问题）</p>
+<hr />
+<h2 id="评审概要">评审概要</h2>
+<p>本次评审在元芳第一轮审阅（发现 2 阻断 + 4 高 + 6 中 + 7 低，共 19
+项问题）的基础上进行综合安全审计和质量验证。</p>
+<p><strong>第一轮修复验证</strong>： - C1（dsn.go import 缺失）— ✅
+已修复，TLS 逻辑已分离至 <code>tls.go</code> - C2（RegisterTLSConfig
+空实现）— ✅ 已修复，现正确调用 <code>mysql.RegisterTLSConfig()</code> -
+H1（SQL 注入）— ✅ 已修复，<code>isValidIdentifier()</code> +
+<code>escapeIdentifier()</code> 已添加 - H2（密码 flag 传值）— ✅
+已修复，<code>--password</code> 改为 bool 标志 - H3（密码 URL 编码）— ✅
+已修复，<code>ToMySQLDSN()</code> 使用 <code>url.QueryEscape()</code> -
+H4（退格键 bug）— ✅ 已修复，改用 <code>runes</code> 切片逐字符删除</p>
+<p><strong>本轮新发现</strong>：0 阻断 / 1 高 / 4 中 / 5 低，共 10
+项</p>
+<hr />
+<h2 id="高严重度high-安全问题">1. 高严重度（High — 安全问题）</h2>
+<h3 id="s1.-密码以明文存储在内存和环境变量中进程-dump-可泄露">S1.
+密码以明文存储在内存和环境变量中，进程 dump 可泄露</h3>
+<p><strong>文件</strong>：<code>cmd/root.go:199-208</code></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> envPW <span class="op">:=</span> os<span class="op">.</span>Getenv<span class="op">(</span><span class="st">&quot;TIUP_SQL_PASSWORD&quot;</span><span class="op">);</span> envPW <span class="op">!=</span> <span class="st">&quot;&quot;</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    dsnConfig<span class="op">.</span>Password <span class="op">=</span> envPW</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>攻击路径</strong>： 1. 用户设置环境变量
+<code>TIUP_SQL_PASSWORD=secret</code> 2. 攻击者通过
+<code>/proc/&lt;pid&gt;/environ</code>（Linux）或进程诊断工具读取进程环境变量
+3. 密码明文泄露</p>
+<p>同时，<code>DSNConfig.Password</code> 字段在内存中以明文
+<code>string</code> 存储，Go <code>string</code>
+不可变且无法主动清零，Go
+垃圾回收后内存页可能被操作系统交换到磁盘（swap），密码残留可被取证工具提取。</p>
+<p><strong>影响</strong>：中等 —
+环境变量传密码是常见做法，但存在已知风险</p>
+<p><strong>修复建议</strong>： - 短期：在帮助文本中警告
+<code>TIUP_SQL_PASSWORD</code> 环境变量的安全风险，推荐使用连接配置 +
+交互输入 - 长期：考虑使用 <code>runtime.MemStats</code> 控制或
+<code>[]byte</code> 缓冲区 +
+<code>crypto/subtle.ConstantTimeCompare</code> 减少内存暴露时间</p>
+<p><strong>严重度定级理由</strong>：虽然该模式与 <code>mysql</code>
+命令行客户端等成熟工具一致，但设计文档 6.1
+节明确要求凭据安全管理，此问题应被记录和跟踪。</p>
+<hr />
+<h2 id="中等严重度medium-功能逻辑健壮性">2. 中等严重度（Medium —
+功能/逻辑/健壮性）</h2>
+<h3 id="m1.-splitstatements-在-sql-字符串内的分号处错误分割">M1.
+<code>splitStatements()</code> 在 SQL 字符串内的分号处错误分割</h3>
+<p><strong>文件</strong>：<code>batch/executor.go:200-210</code>、<code>batch/executor.go:161-198</code></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> <span class="op">(</span>e <span class="op">*</span>Executor<span class="op">)</span> splitStatements<span class="op">(</span>input <span class="dt">string</span><span class="op">)</span> <span class="op">[]</span><span class="dt">string</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    parts <span class="op">:=</span> strings<span class="op">.</span>Split<span class="op">(</span>input<span class="op">,</span> e<span class="op">.</span>opts<span class="op">.</span>Delimiter<span class="op">)</span>  <span class="co">// 无引号感知</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><code>splitStatements()</code> 和 <code>readStatements()</code>
+都不处理 SQL 字符串字面量内的分号：</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">INSERT</span> <span class="kw">INTO</span> t <span class="kw">VALUES</span> (<span class="st">&#39;hello;world&#39;</span>);</span></code></pre></div>
+<p>会被错误分割为： 1. <code>INSERT INTO t VALUES (&#39;hello</code> 2.
+<code>world&#39;)</code></p>
+<p>测试文件 <code>executor_test.go:111-131</code>
+已明确记录此限制（“simple parser splits on all semicolons including
+those in
+strings”），但这是功能性缺陷，影响带分号的字符串数据的批量导入。</p>
+<p><strong>影响</strong>：带分号/注释分隔符的数据批量导入会失败或产生错误
+SQL</p>
+<p><strong>修复建议</strong>：实现基本的引号感知分割： - 跟踪当前是否在
+<code>&#39;...&#39;</code>（单引号）或 <code>&quot;...&quot;</code>（双引号）或
+<code>/*...*/</code>（块注释）或 <code>--...</code>（行注释）内 -
+仅在非引号/非注释位置的分号处分割 - 注意 MySQL
+字符串转义：<code>\&#39;</code>、<code>\\</code> 不结束字符串</p>
+<h3 id="m2.-tls-配置名称使用-hostport-拼接host-可能含特殊字符">M2. TLS
+配置名称使用 host:port 拼接，host 可能含特殊字符</h3>
+<p><strong>文件</strong>：<code>connect/dsn.go:304-313</code>、<code>connect/tls.go:79</code></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// dsn.go</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> fmt<span class="op">.</span>Sprintf<span class="op">(</span><span class="st">&quot;tiup-sql-%s-%d&quot;</span><span class="op">,</span> c<span class="op">.</span>Host<span class="op">,</span> c<span class="op">.</span>Port<span class="op">)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">// tls.go</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>name <span class="op">:=</span> fmt<span class="op">.</span>Sprintf<span class="op">(</span><span class="st">&quot;tiup-sql-%s-%d&quot;</span><span class="op">,</span> c<span class="op">.</span>Host<span class="op">,</span> c<span class="op">.</span>Port<span class="op">)</span></span></code></pre></div>
+<p>如果 <code>c.Host</code>
+包含点号、连字符以外的特殊字符（理论上不太可能但不排除），可能导致
+<code>mysql.RegisterTLSConfig</code> 的内部 map
+冲突或不可预期的行为。虽然 DSN 解析阶段会验证 host 格式，但
+<code>parseUserHost()</code> 和 <code>parseHostPort()</code> 并未强制
+host 只允许合法字符。</p>
+<p><strong>影响</strong>：低概率 TLS 注册冲突</p>
+<p><strong>修复建议</strong>：对 host 使用安全的哈希或仅保留
+<code>[a-zA-Z0-9.-]</code> 字符。</p>
+<h3 id="m3.-applyflagoverrides-逻辑与设计意图矛盾">M3.
+<code>applyFlagOverrides()</code> 逻辑与设计意图矛盾</h3>
+<p><strong>文件</strong>：<code>cmd/root.go:243-262</code></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> applyFlagOverrides<span class="op">(</span>cfg <span class="op">*</span>connect<span class="op">.</span>DSNConfig<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> flags<span class="op">.</span>host <span class="op">!=</span> <span class="st">&quot;127.0.0.1&quot;</span> <span class="op">||</span> cfg<span class="op">.</span>Host <span class="op">==</span> <span class="st">&quot;&quot;</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        cfg<span class="op">.</span>Host <span class="op">=</span> flags<span class="op">.</span>host</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> flags<span class="op">.</span>port <span class="op">!=</span> <span class="dv">4000</span> <span class="op">||</span> cfg<span class="op">.</span>Port <span class="op">==</span> <span class="dv">0</span> <span class="op">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        cfg<span class="op">.</span>Port <span class="op">=</span> flags<span class="op">.</span>port</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>条件 <code>flags.host != &quot;127.0.0.1&quot; || cfg.Host == &quot;&quot;</code>
+的意图是：如果用户显式指定了非默认 host，或者 DSN 中 host
+为空，则覆盖。但问题是：</p>
+<ul>
+<li>当 DSN 指定了 <code>host=10.0.0.1</code>，且用户也通过
+<code>--host 10.0.0.1</code>（与 DSN 相同的值）时，不会覆盖 —
+这是正确的</li>
+<li>但当用户 DSN 指定了 <code>host=10.0.0.1</code>，用户没有传
+<code>--host</code>（默认 127.0.0.1）时，由于
+<code>flags.host == &quot;127.0.0.1&quot;</code> 且
+<code>cfg.Host != &quot;&quot;</code>，不会覆盖 — 这也是正确的</li>
+</ul>
+<p>然而，对于 <code>port</code> 的逻辑
+<code>flags.port != 4000 || cfg.Port == 0</code>： - DSN 指定了
+<code>port=3306</code>，用户没传 <code>--port</code>（默认 4000），由于
+<code>flags.port == 4000</code> 且 <code>cfg.Port != 0</code>，不覆盖 —
+正确 - DSN 指定了 <code>port=4000</code>，用户传
+<code>--port 4000</code>，不覆盖 — 正确</p>
+<p>总体逻辑看似正确，但代码意图不够清晰，容易在后续维护中引入 bug。</p>
+<p><strong>影响</strong>：代码可维护性风险</p>
+<p><strong>修复建议</strong>：改为显式跟踪用户是否传入了 flag（使用
+<code>cmd.Flags().Changed(&quot;host&quot;)</code> 等），逻辑更清晰。</p>
+<h3 id="m4.-config_test.go-环境变量恢复存在-bug">M4.
+<code>config_test.go</code> 环境变量恢复存在 bug</h3>
+<p><strong>文件</strong>：<code>connect/config_test.go:93-95</code></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> TestConfigFile_FileCreation<span class="op">(</span>t <span class="op">*</span>testing<span class="op">.</span>T<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    tmpDir <span class="op">:=</span> t<span class="op">.</span>TempDir<span class="op">()</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    os<span class="op">.</span>Setenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">,</span> tmpDir<span class="op">)</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">defer</span> os<span class="op">.</span>Setenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">,</span> os<span class="op">.</span>Getenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">))</span>  <span class="co">// </span><span class="al">BUG</span><span class="co">: 此时 HOME 已经是 tmpDir</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>在 <code>os.Setenv(&quot;HOME&quot;, tmpDir)</code>
+之后，<code>os.Getenv(&quot;HOME&quot;)</code> 返回 <code>tmpDir</code>，所以
+<code>defer</code> 恢复的值仍然是 <code>tmpDir</code>，测试结束后
+<code>HOME</code> 环境变量不会被恢复为原始值。对比同文件
+<code>TestConfigFile_SaveAndLoad</code>（第 24-26 行）的正确写法：</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>home <span class="op">:=</span> os<span class="op">.</span>Getenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>os<span class="op">.</span>Setenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">,</span> tmpDir<span class="op">)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">defer</span> os<span class="op">.</span>Setenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">,</span> home<span class="op">)</span>  <span class="co">// 正确：保存原始值</span></span></code></pre></div>
+<p><strong>影响</strong>：测试污染，可能影响后续测试（虽然 Go
+通常并行运行测试时每个包独立）</p>
+<p><strong>修复建议</strong>：使用与
+<code>TestConfigFile_SaveAndLoad</code> 相同的模式。</p>
+<hr />
+<h2 id="低严重度low-代码质量完整性">3. 低严重度（Low —
+代码质量/完整性）</h2>
+<h3 id="l1.-全局可变-flags-变量导致测试困难">L1. 全局可变
+<code>flags</code> 变量导致测试困难</h3>
+<p><strong>文件</strong>：<code>cmd/root.go:72</code></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> flags globalFlags</span></code></pre></div>
+<p><code>flags</code> 是包级全局变量，所有 flag
+绑定直接写入此变量。这使得单元测试无法隔离不同 flag 组合的场景。虽然当前
+<code>cmd/</code>
+包没有测试文件（L5），但如果未来添加测试，全局可变状态会成为阻碍。</p>
+<p><strong>修复建议</strong>：将 <code>flags</code> 嵌入
+<code>cobra.Command</code> 的 <code>Context</code> 或使用依赖注入。</p>
+<h3 id="l2.-execquery-使用-query-而非-exec-处理非-select-语句">L2.
+<code>execQuery()</code> 使用 <code>Query()</code> 而非
+<code>Exec()</code> 处理非 SELECT 语句</h3>
+<p><strong>文件</strong>：<code>repl/repl.go:163-165</code></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> <span class="op">(</span>r <span class="op">*</span>REPL<span class="op">)</span> execQuery<span class="op">(</span>query <span class="dt">string</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    rows<span class="op">,</span> err <span class="op">:=</span> r<span class="op">.</span>db<span class="op">.</span>Query<span class="op">(</span>query<span class="op">)</span></span></code></pre></div>
+<p>所有 SQL 语句（包括
+<code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code>、<code>CREATE</code>、<code>DROP</code>
+等）都通过 <code>Query()</code> 执行。对于 DML/DDL 语句，应使用
+<code>Exec()</code> 以： - 避免在服务器端创建不必要的结果集 - 获取
+<code>RowsAffected()</code> 等受影响行数信息 -
+减少客户端与服务器之间的网络开销</p>
+<p>当前实现虽然功能上可以工作（MySQL 驱动对 DML 的 <code>Query()</code>
+返回空结果集），但效率不高。</p>
+<p><strong>修复建议</strong>：添加简单的语句类型判断（如前缀匹配
+<code>SELECT</code>、<code>SHOW</code>、<code>DESCRIBE</code>、<code>EXPLAIN</code>
+用 <code>Query()</code>，其他用 <code>Exec()</code>）。</p>
+<h3 id="l3.-execfile-在-i-元命令中不处理目录路径">L3.
+<code>execFile()</code> 在 <code>\i</code> 元命令中不处理目录路径</h3>
+<p><strong>文件</strong>：<code>repl/repl.go:340-377</code></p>
+<p><code>\i &lt;file&gt;</code>
+只能执行单个文件，不支持目录。如果用户传入目录路径，<code>os.Open()</code>
+会失败。设计文档提到 <code>\i &lt;file&gt;</code> 执行 SQL
+文件，但对比批量执行器的 <code>execDirectory()</code> 功能，REPL 内的
+<code>\i</code> 功能较弱。</p>
+<p><strong>影响</strong>：功能不一致，但非安全风险</p>
+<h3 id="l4.-formatvalue-对-byte-使用-string-转换可能产生非-utf-8-输出">L4.
+<code>formatValue()</code> 对 <code>[]byte</code> 使用
+<code>string()</code> 转换可能产生非 UTF-8 输出</h3>
+<p><strong>文件</strong>：<code>format/table.go:133-134</code></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">case</span> <span class="op">[]</span><span class="dt">byte</span><span class="op">:</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dt">string</span><span class="op">(</span>val<span class="op">)</span></span></code></pre></div>
+<p>MySQL 的 <code>BLOB</code>、<code>BINARY</code> 列返回
+<code>[]byte</code>，如果内容是二进制数据（如图像、加密数据），<code>string()</code>
+转换可能产生乱码或破坏终端显示。</p>
+<p><strong>修复建议</strong>：检测是否为有效 UTF-8，非 UTF-8 内容显示为
+<code>&lt;BINARY n bytes&gt;</code> 占位符。</p>
+<h3 id="l5.-测试覆盖仍不足延续第一轮-l5">L5. 测试覆盖仍不足（延续第一轮
+L5）</h3>
+<p>当前测试仅覆盖纯逻辑模块（DSN 解析、配置
+CRUD、格式化输出、语句分割、日志记录），缺少：</p>
+<ul>
+<li><code>cmd/root.go</code> 的 flag 解析和执行路径测试</li>
+<li><code>repl/repl.go</code> 的 REPL 循环和元命令测试</li>
+<li><code>batch/executor.go</code> 的 <code>execOne()</code>
+和错误策略测试</li>
+<li><code>connect/tls.go</code> 的 TLS 配置注册测试</li>
+<li><code>connect/pool.go</code> 的数据库连接测试（需 mock）</li>
+</ul>
+<p><strong>建议</strong>：在后续迭代中优先补充
+<code>cmd/</code>、<code>repl/</code> 和 <code>connect/tls.go</code>
+的测试。</p>
+<hr />
+<h2 id="第一轮遗留问题状态">4. 第一轮遗留问题状态</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>编号</th>
+<th>描述</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1（第一轮）</td>
+<td>MaxRows 未实现</td>
+<td>🔴 未修复</td>
+<td>代码中仍无 MaxRows 行数限制逻辑</td>
+</tr>
+<tr>
+<td>M2（第一轮）</td>
+<td>成功/失败计数器累积</td>
+<td>🔴 未修复</td>
+<td><code>successes</code>/<code>failures</code> 仍为 Executor 字段</td>
+</tr>
+<tr>
+<td>M3（第一轮）</td>
+<td>垂直格式化 maxLabelLen 重复计算</td>
+<td>🔴 未修复</td>
+<td>仍在内层循环中 O(N²) 计算</td>
+</tr>
+<tr>
+<td>M4（第一轮）</td>
+<td>慢查询阈值解析静默回退</td>
+<td>🔴 未修复</td>
+<td>仍静默回退到 1s</td>
+</tr>
+<tr>
+<td>M5（第一轮）</td>
+<td>TLS 注册名冲突</td>
+<td>🟡 部分修复</td>
+<td>已改用 <code>RegisterTLSConfig</code> 带锁，但同 host:port
+重复注册仍会报错</td>
+</tr>
+<tr>
+<td>M6（第一轮）</td>
+<td>配置缓存无过期</td>
+<td>🔴 未修复</td>
+<td>configCache 仍无失效机制</td>
+</tr>
+<tr>
+<td>L1-L7（第一轮）</td>
+<td>代码质量和设计差距</td>
+<td>大部分 🔴 未修复</td>
+<td>预期在后续迭代处理</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="安全合规检查">5. 安全合规检查</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>检查项</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>密码不以命令行明文传递</td>
+<td>✅ 通过</td>
+<td><code>--password</code> 改为 bool flag</td>
+</tr>
+<tr>
+<td>密码交互式密文输入</td>
+<td>✅ 通过</td>
+<td>使用 term raw mode 读取</td>
+</tr>
+<tr>
+<td>TLS 证书验证默认启用</td>
+<td>✅ 通过</td>
+<td><code>InsecureSkipVerify: false</code> 默认</td>
+</tr>
+<tr>
+<td><code>--tls-skip-verify</code> 需显式指定</td>
+<td>✅ 通过</td>
+<td>Bool flag 默认 false</td>
+</tr>
+<tr>
+<td>元命令 SQL 注入防护</td>
+<td>✅ 通过</td>
+<td><code>isValidIdentifier()</code> + 反引号包裹</td>
+</tr>
+<tr>
+<td>日志中密码脱敏</td>
+<td>✅ 通过</td>
+<td><code>SanitizedDSN()</code> + <code>sanitizeDSN()</code></td>
+</tr>
+<tr>
+<td>连接配置文件权限</td>
+<td>✅ 通过</td>
+<td><code>0o600</code> 仅所有者读写</td>
+</tr>
+<tr>
+<td>连接配置名称安全</td>
+<td>✅ 通过</td>
+<td><code>strings.ContainsAny(name, &quot;/\\:*?\&quot;&lt;&gt;|&quot;)</code>
+拒绝非法字符</td>
+</tr>
+<tr>
+<td>环境变量密码风险</td>
+<td>⚠️ 已知风险</td>
+<td>详见 S1，建议添加文档警告</td>
+</tr>
+<tr>
+<td>SQL 字符串内分号处理</td>
+<td>⚠️ 功能缺陷</td>
+<td>详见 M1，影响批量导入</td>
+</tr>
+<tr>
+<td>输入密码内存生命周期</td>
+<td>⚠️ 已知限制</td>
+<td>Go string 不可变，无法主动清零</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="设计文档符合度">6. 设计文档符合度</h2>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 40%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>模块</th>
+<th>符合度</th>
+<th>差距</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连接管理 — DSN 解析</td>
+<td>95%</td>
+<td>密码含 <code>@</code> 的 user@host 格式（L3 延续）未处理</td>
+</tr>
+<tr>
+<td>连接管理 — TLS</td>
+<td>90%</td>
+<td>基本功能完整，重复注册需处理</td>
+</tr>
+<tr>
+<td>连接管理 — Playground 发现</td>
+<td>100%</td>
+<td>完全符合</td>
+</tr>
+<tr>
+<td>连接管理 — 连接配置</td>
+<td>85%</td>
+<td>缺少密码持久化和缓存失效</td>
+</tr>
+<tr>
+<td>交互式 REPL</td>
+<td>70%</td>
+<td>自动补全、语法高亮、历史持久化未实现</td>
+</tr>
+<tr>
+<td>批量执行</td>
+<td>85%</td>
+<td>MaxRows 未实现，字符串内分号分割有缺陷</td>
+</tr>
+<tr>
+<td>输出格式化</td>
+<td>95%</td>
+<td>CJK 对齐、CSV BOM 未处理</td>
+</tr>
+<tr>
+<td>日志与诊断</td>
+<td>90%</td>
+<td>基本完整，慢查询阈值回退需提示</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="总结与建议">7. 总结与建议</h2>
+<h3 id="整体评价">整体评价</h3>
+<p>代码架构清晰，模块划分合理，与设计文档高度一致。第一轮发现的 6
+个阻断/高严重度问题已全部正确修复，安全态势明显改善。当前无阻断级问题。</p>
+<h3 id="需要关注的问题">需要关注的问题</h3>
+<ol type="1">
+<li><strong>必须修复</strong>（影响数据正确性）：
+<ul>
+<li><strong>M1</strong>：SQL 字符串内分号分割 — 影响批量数据导入</li>
+</ul></li>
+<li><strong>建议修复</strong>（影响健壮性）：
+<ul>
+<li><strong>M2</strong>：计数器累积</li>
+<li><strong>M3</strong>：垂直格式化性能</li>
+<li><strong>M4</strong>：测试环境变量恢复 bug</li>
+</ul></li>
+<li><strong>可延后</strong>（后续迭代）：
+<ul>
+<li>第一轮遗留的 M4（慢查询回退）、M5（TLS 冲突）、M6（缓存过期）</li>
+<li>缺失的高级功能（自动补全、语法高亮、历史持久化）</li>
+</ul></li>
+</ol>
+<h3 id="结论">结论</h3>
+<p>当前代码状态适合进行编译验证和基本功能测试。建议在
+M1（字符串分号分割）修复后进入 M4 测试阶段。安全层面无阻断问题，剩余
+S1（环境变量密码风险）为行业共性问题，建议通过文档方式告知用户。</p>
+<hr />
+<p><strong>评审完成。所有问题修复并验证没有问题后请通知。</strong></p>
+</body>
+</html>

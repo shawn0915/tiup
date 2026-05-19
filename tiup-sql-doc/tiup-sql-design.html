@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>tiup sql 组件设计文档</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">body{font-family:"Segoe UI",system-ui,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1a1a1a}
+h1{border-bottom:2px solid #4472C4;padding-bottom:.3em;color:#4472C4}
+h2{border-bottom:1px solid #ddd;padding-bottom:.2em;margin-top:2em}
+h3{color:#5b9bd5}
+table{border-collapse:collapse;width:100%;margin:1em 0}
+th,td{border:1px solid #ddd;padding:.5em .75em;text-align:left}
+th{background:#f5f5f5;font-weight:600}
+tr:nth-child(even){background:#fafafa}
+code{background:#f4f4f4;padding:.15em .3em;border-radius:3px;font-size:.9em}
+pre{background:#2d2d2d;color:#f8f8f2;padding:1em;border-radius:6px;overflow-x:auto}
+pre code{background:none;padding:0;color:inherit}
+blockquote{border-left:4px solid #4472C4;padding:.5em 1em;margin:1em 0;background:#f9f9f9}
+ul,ol{padding-left:1.5em}
+#TOC{background:#f5f7fa;padding:1em 1.5em;border-radius:8px;margin-bottom:2em}
+#TOC ul{list-style:none;padding-left:0}
+#TOC>ul{padding-left:1em}
+#TOC li{margin:.3em 0}
+a{color:#4472C4;text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid #ddd;margin:2em 0}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">tiup sql 组件设计文档</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#tiup-sql-组件设计文档" id="toc-tiup-sql-组件设计文档">tiup
+sql 组件设计文档</a>
+<ul>
+<li><a href="#概述" id="toc-概述">1. 概述</a>
+<ul>
+<li><a href="#背景" id="toc-背景">1.1 背景</a></li>
+<li><a href="#目标" id="toc-目标">1.2 目标</a></li>
+<li><a href="#与现有组件的关系" id="toc-与现有组件的关系">1.3
+与现有组件的关系</a></li>
+</ul></li>
+<li><a href="#功能模块设计" id="toc-功能模块设计">2. 功能模块设计</a>
+<ul>
+<li><a href="#模块总览" id="toc-模块总览">2.1 模块总览</a></li>
+<li><a href="#模块一连接管理-connect" id="toc-模块一连接管理-connect">2.2 模块一：连接管理 (connect)</a></li>
+<li><a href="#模块二交互式-repl-repl" id="toc-模块二交互式-repl-repl">2.3 模块二：交互式 REPL (repl)</a></li>
+<li><a href="#模块三批量执行-batch" id="toc-模块三批量执行-batch">2.4
+模块三：批量执行 (batch)</a></li>
+<li><a href="#模块四输出格式化-format" id="toc-模块四输出格式化-format">2.5 模块四：输出格式化
+(format)</a></li>
+<li><a href="#模块五日志与诊断" id="toc-模块五日志与诊断">2.6
+模块五：日志与诊断</a></li>
+</ul></li>
+<li><a href="#命令行接口设计" id="toc-命令行接口设计">3.
+命令行接口设计</a>
+<ul>
+<li><a href="#完整命令参数" id="toc-完整命令参数">3.1
+完整命令参数</a></li>
+<li><a href="#使用示例" id="toc-使用示例">3.2 使用示例</a></li>
+</ul></li>
+<li><a href="#项目结构与代码组织" id="toc-项目结构与代码组织">4.
+项目结构与代码组织</a>
+<ul>
+<li><a href="#目录结构" id="toc-目录结构">4.1 目录结构</a></li>
+<li><a href="#核心类型定义" id="toc-核心类型定义">4.2
+核心类型定义</a></li>
+<li><a href="#格式化器接口" id="toc-格式化器接口">4.3
+格式化器接口</a></li>
+</ul></li>
+<li><a href="#构建与集成" id="toc-构建与集成">5. 构建与集成</a>
+<ul>
+<li><a href="#makefile-集成" id="toc-makefile-集成">5.1 Makefile
+集成</a></li>
+<li><a href="#依赖管理" id="toc-依赖管理">5.2 依赖管理</a></li>
+<li><a href="#测试策略" id="toc-测试策略">5.3 测试策略</a></li>
+</ul></li>
+<li><a href="#安全考量" id="toc-安全考量">6. 安全考量</a>
+<ul>
+<li><a href="#密码安全" id="toc-密码安全">6.1 密码安全</a></li>
+<li><a href="#tls-证书验证" id="toc-tls-证书验证">6.2 TLS
+证书验证</a></li>
+<li><a href="#sql-注入防护" id="toc-sql-注入防护">6.3 SQL
+注入防护</a></li>
+<li><a href="#输入安全" id="toc-输入安全">6.4 输入安全</a></li>
+</ul></li>
+<li><a href="#里程碑规划" id="toc-里程碑规划">7. 里程碑规划</a></li>
+<li><a href="#与现有-tiup-client-的兼容性" id="toc-与现有-tiup-client-的兼容性">8. 与现有 <code>tiup client</code>
+的兼容性</a>
+<ul>
+<li><a href="#迁移策略" id="toc-迁移策略">8.1 迁移策略</a></li>
+<li><a href="#行为差异" id="toc-行为差异">8.2 行为差异</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="tiup-sql-组件设计文档">tiup sql 组件设计文档</h1>
+<h2 id="概述">1. 概述</h2>
+<h3 id="背景">1.1 背景</h3>
+<p>TiUP 是 PingCAP 生态系统的组件管理 CLI 工具，目前已有
+<code>tiup client</code> 组件可连接本地 playground
+实例，但功能有限：仅支持本地 playground
+实例发现，不支持直接指定远程数据库地址，不支持连接 MySQL，且缺乏 SQL
+执行、结果导出等高级功能。</p>
+<h3 id="目标">1.2 目标</h3>
+<p>为 TiUP 新增 <code>tiup sql</code> 组件，提供通用 SQL
+客户端能力，支持连接 <strong>MySQL</strong> 和
+<strong>TiDB</strong>，具备以下核心能力：</p>
+<ul>
+<li>直接通过 DSN/连接字符串连接任意 MySQL 或 TiDB 实例</li>
+<li>自动发现并连接本地 playground 实例（兼容现有
+<code>tiup client</code> 能力）</li>
+<li>交互式 SQL REPL（Read-Eval-Print Loop）</li>
+<li>SQL 文件批量执行</li>
+<li>查询结果多格式输出（表格、CSV、JSON）</li>
+<li>安全的连接管理和凭据处理</li>
+<li>连接历史和常用连接收藏</li>
+</ul>
+<h3 id="与现有组件的关系">1.3 与现有组件的关系</h3>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 63%" />
+</colgroup>
+<thead>
+<tr>
+<th>组件</th>
+<th>定位</th>
+<th>与 <code>tiup sql</code> 的关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tiup client</code></td>
+<td>仅连接本地 playground</td>
+<td><code>tiup sql</code> 完全替代并增强</td>
+</tr>
+<tr>
+<td><code>tiup playground</code></td>
+<td>本地集群启动</td>
+<td><code>tiup sql</code> 可自动发现其启动的实例</td>
+</tr>
+<tr>
+<td><code>tiup cluster</code></td>
+<td>远程集群管理</td>
+<td><code>tiup sql</code> 可利用 cluster 的拓扑信息简化连接</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="功能模块设计">2. 功能模块设计</h2>
+<h3 id="模块总览">2.1 模块总览</h3>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│                    tiup sql                              │
+├─────────────┬──────────────┬─────────────┬──────────────┤
+│   连接管理   │  交互式 REPL  │  批量执行    │  输出格式化   │
+│  (connect)  │   (repl)     │  (batch)    │  (format)    │
+├─────────────┼──────────────┼─────────────┼──────────────┤
+│ • DSN 解析   │ • 行编辑     │ • 文件执行   │ • 表格输出   │
+│ • 连接池管理  │ • 自动补全   │ • stdin 管道 │ • CSV 输出   │
+│ • TLS 支持   │ • 语法高亮   │ • 事务控制   │ • JSON 输出  │
+│ • 凭据安全   │ • 历史记录   │ • 错误处理   │ • TSV 输出   │
+│ • Playground │ • 多行编辑   │ • 进度显示   │ • 垂直表格   │
+│   实例发现   │ • 特殊命令   │             │              │
+├─────────────┴──────────────┴─────────────┴──────────────┤
+│                    核心引擎 (usql)                        │
+├─────────────────────────────────────────────────────────┤
+│              go-sql-driver/mysql (MySQL/TiDB 驱动)        │
+└─────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="模块一连接管理-connect">2.2 模块一：连接管理 (connect)</h3>
+<h4 id="dsn-解析与构造">2.2.1 DSN 解析与构造</h4>
+<p>支持多种连接指定方式：</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 方式一：URL 格式</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql mysql://root:password@127.0.0.1:4000/test_db</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 方式二：键值对参数</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--host</span> 127.0.0.1 <span class="at">--port</span> 4000 <span class="at">--user</span> root <span class="at">--password</span> test_db</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 方式三：仅指定主机（交互式输入密码）</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql 127.0.0.1:4000</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 方式四：连接本地 playground</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--playground</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 方式五：通过 cluster 拓扑连接</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--cluster</span> my-cluster <span class="at">--component</span> tidb</span></code></pre></div>
+<p><strong>DSN 解析器</strong> 将以上各种输入统一转换为标准 MySQL DSN
+格式：</p>
+<pre><code>[username[:password]@][protocol[(address)]]/dbname[?param1=value1&amp;...&amp;paramN=valueN]</code></pre>
+<p>支持的关键 DSN 参数： | 参数 | 默认值 | 说明 | |——|——–|——| |
+<code>tls</code> | <code>false</code> | TLS 连接配置 | |
+<code>timeout</code> | <code>5s</code> | 连接超时 | |
+<code>readTimeout</code> | <code>30s</code> | 读超时 | |
+<code>writeTimeout</code> | <code>30s</code> | 写超时 | |
+<code>maxAllowedPacket</code> | <code>64M</code> | 最大数据包 | |
+<code>charset</code> | <code>utf8mb4</code> | 字符集 | |
+<code>collation</code> | <code>utf8mb4_general_ci</code> | 排序规则
+|</p>
+<h4 id="tlsssl-支持">2.2.2 TLS/SSL 支持</h4>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 跳过证书验证（仅用于开发环境）</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--tls-skip-verify</span> mysql://root@host:4000/</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 指定 CA 证书</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--tls-ca</span> /path/to/ca.pem mysql://root@host:4000/</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 完整 TLS 配置</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--tls-ca</span> /path/to/ca.pem <span class="dt">\</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">--tls-cert</span> /path/to/client-cert.pem <span class="dt">\</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">--tls-key</span> /path/to/client-key.pem <span class="dt">\</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>         mysql://root@host:4000/</span></code></pre></div>
+<h4 id="playground-实例自动发现">2.2.3 Playground 实例自动发现</h4>
+<p>复用现有 <code>tiup client</code> 的实例发现逻辑，扫描
+<code>~/.tiup/data/</code> 下的实例元数据和 DSN 文件：</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> discoverPlaygroundEndpoints<span class="op">(</span>tiupHome <span class="dt">string</span><span class="op">)</span> <span class="op">([]*</span>Endpoint<span class="op">,</span> <span class="dt">error</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 1. 读取 data 目录下所有实例</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 2. 通过 gopsutil 检查进程是否存活</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 3. 读取每个实例的 dsn 文件</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 4. 返回可用端点列表</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h4 id="凭据安全管理">2.2.4 凭据安全管理</h4>
+<ul>
+<li><strong>密码输入</strong>：交互模式下使用终端密文输入（<code>golang.org/x/term</code>
+的 <code>ReadPassword</code>），不在命令行参数中暴露密码</li>
+<li><strong>连接配置文件</strong>：可选的
+<code>~/.tiup/connections.yaml</code> 存储常用连接（密码使用
+<code>golang.org/x/crypto/bcrypt</code> 哈希存储，运行时解密由 OS
+密钥链管理）</li>
+<li><strong>环境变量</strong>：支持 <code>TIUP_SQL_PASSWORD</code>
+环境变量传递密码（优先级低于交互输入）</li>
+<li><strong>连接配置文件格式</strong>：</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">connections</span><span class="kw">:</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> local-dev</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">host</span><span class="kw">:</span><span class="at"> </span><span class="fl">127.0.0.1</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">4000</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">user</span><span class="kw">:</span><span class="at"> root</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">database</span><span class="kw">:</span><span class="at"> test</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tls</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> prod-tidb</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">host</span><span class="kw">:</span><span class="at"> </span><span class="fl">10.0.1.100</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">4000</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">user</span><span class="kw">:</span><span class="at"> app_user</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">    # password: 从交互式输入或密钥链获取</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tls</span><span class="kw">:</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ca</span><span class="kw">:</span><span class="at"> /etc/ssl/tidb-ca.pem</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">cert</span><span class="kw">:</span><span class="at"> /etc/ssl/client-cert.pem</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">key</span><span class="kw">:</span><span class="at"> /etc/ssl/client-key.pem</span></span></code></pre></div>
+<p>使用方式：</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用已保存的连接</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">-c</span> local-dev</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 管理连接配置</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--save-connection</span> local-dev mysql://root@127.0.0.1:4000/test</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--list-connections</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--delete-connection</span> prod-tidb</span></code></pre></div>
+<h3 id="模块二交互式-repl-repl">2.3 模块二：交互式 REPL (repl)</h3>
+<h4 id="行编辑器">2.3.1 行编辑器</h4>
+<p>基于 <a href="https://github.com/xo/usql">usql</a> 的
+<code>rline</code> 包提供：</p>
+<ul>
+<li>行编辑：Emacs/Vi 键绑定</li>
+<li>历史记录：持久化到
+<code>~/.tiup/sql/history</code>（每个连接独立历史）</li>
+<li>多行编辑：分号结尾的语句自动执行，支持反斜杠续行</li>
+<li>自动补全（详见 2.3.2）</li>
+</ul>
+<h4 id="自动补全">2.3.2 自动补全</h4>
+<table>
+<thead>
+<tr>
+<th>补全类型</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SQL 关键字</td>
+<td><code>SEL</code> → <code>SELECT</code></td>
+</tr>
+<tr>
+<td>数据库名</td>
+<td><code>USE</code> → 列出所有数据库</td>
+</tr>
+<tr>
+<td>表名</td>
+<td><code>SELECT * FROM</code> → 列出当前数据库的表</td>
+</tr>
+<tr>
+<td>列名</td>
+<td><code>SELECT t.</code> → 列出表 <code>t</code> 的所有列</td>
+</tr>
+<tr>
+<td>特殊命令</td>
+<td><code>\</code> → 列出所有 <code>\</code> 开头的元命令</td>
+</tr>
+</tbody>
+</table>
+<p>实现方式：在用户输入空格或 <code>.</code> 后触发补全请求，通过
+<code>SHOW DATABASES</code>、<code>SHOW TABLES</code>、<code>DESCRIBE &lt;table&gt;</code>
+等元数据查询获取候选列表。</p>
+<h4 id="元命令-meta-commands">2.3.3 元命令 (Meta Commands)</h4>
+<p>以反斜杠 <code>\</code> 开头的内置命令，不发送到数据库：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>别名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\q</code></td>
+<td><code>\exit</code>, <code>\quit</code></td>
+<td>退出</td>
+</tr>
+<tr>
+<td><code>\c</code></td>
+<td><code>\connect</code></td>
+<td>重新连接</td>
+</tr>
+<tr>
+<td><code>\d</code></td>
+<td></td>
+<td>列出当前数据库的所有表</td>
+</tr>
+<tr>
+<td><code>\d &lt;table&gt;</code></td>
+<td></td>
+<td>显示表结构</td>
+</tr>
+<tr>
+<td><code>\l</code></td>
+<td></td>
+<td>列出所有数据库</td>
+</tr>
+<tr>
+<td><code>\u &lt;db&gt;</code></td>
+<td><code>\use</code></td>
+<td>切换数据库</td>
+</tr>
+<tr>
+<td><code>\h</code></td>
+<td><code>\help</code></td>
+<td>显示帮助</td>
+</tr>
+<tr>
+<td><code>\s</code></td>
+<td><code>\status</code></td>
+<td>显示连接状态信息</td>
+</tr>
+<tr>
+<td><code>\G</code></td>
+<td></td>
+<td>切换结果为垂直显示模式</td>
+</tr>
+<tr>
+<td><code>\T</code></td>
+<td></td>
+<td>切换结果为表格显示模式</td>
+</tr>
+<tr>
+<td><code>\W</code></td>
+<td></td>
+<td>切换结果写入文件 <code>\w &lt;file&gt;</code></td>
+</tr>
+<tr>
+<td><code>\t &lt;format&gt;</code></td>
+<td></td>
+<td>切换输出格式（table/csv/json/tsv）</td>
+</tr>
+<tr>
+<td><code>\e</code></td>
+<td><code>\edit</code></td>
+<td>用外部编辑器编辑 SQL</td>
+</tr>
+<tr>
+<td><code>\i &lt;file&gt;</code></td>
+<td><code>\include</code></td>
+<td>执行 SQL 文件</td>
+</tr>
+<tr>
+<td><code>\echo &lt;text&gt;</code></td>
+<td></td>
+<td>输出文本</td>
+</tr>
+<tr>
+<td><code>\timing</code></td>
+<td></td>
+<td>切换查询计时显示</td>
+</tr>
+<tr>
+<td><code>\pager [cmd]</code></td>
+<td></td>
+<td>设置/取消分页器</td>
+</tr>
+<tr>
+<td><code>\system &lt;cmd&gt;</code></td>
+<td><code>\!</code></td>
+<td>执行系统命令</td>
+</tr>
+<tr>
+<td><code>\warnings</code></td>
+<td></td>
+<td>切换警告显示</td>
+</tr>
+</tbody>
+</table>
+<h4 id="会话变量管理">2.3.4 会话变量管理</h4>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- TiDB 特有的会话变量快捷设置</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SET</span> <span class="kw">SESSION</span> tidb_max_execution_time <span class="op">=</span> <span class="dv">60000</span>;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">SET</span> <span class="kw">SESSION</span> sql_mode <span class="op">=</span> <span class="st">&#39;STRICT_TRANS_TABLES&#39;</span>;</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- 显示当前会话变量</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>SHOW VARIABLES <span class="kw">LIKE</span> <span class="st">&#39;max_execution_time&#39;</span>;</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>SHOW <span class="kw">SESSION</span> VARIABLES;</span></code></pre></div>
+<h3 id="模块三批量执行-batch">2.4 模块三：批量执行 (batch)</h3>
+<h4 id="文件执行">2.4.1 文件执行</h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 执行 SQL 文件</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql mysql://root@127.0.0.1:4000/test <span class="at">-f</span> init.sql</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 执行多个 SQL 文件</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql mysql://root@127.0.0.1:4000/ <span class="at">-f</span> schema.sql <span class="at">-f</span> data.sql</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 执行目录下所有 .sql 文件（按文件名排序）</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql mysql://root@127.0.0.1:4000/ <span class="at">-f</span> ./migrations/</span></code></pre></div>
+<p>执行规则： - 以 <code>--</code> 开头的行为注释，跳过 - 空行跳过 -
+以分号结尾的语句作为一条 SQL 执行 - 支持 <code>delimiter</code>
+指令更改语句分隔符（兼容存储过程/函数定义） - 遇到错误时的行为由
+<code>--on-error</code> 参数控制</p>
+<h4 id="stdin-管道执行">2.4.2 stdin 管道执行</h4>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 从管道执行</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;SELECT 1&quot;</span> <span class="kw">|</span> <span class="ex">tiup</span> sql mysql://root@127.0.0.1:4000/</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 从其他命令的输出执行</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">mysqldump</span> <span class="at">--no-data</span> db <span class="kw">|</span> <span class="ex">tiup</span> sql mysql://root@127.0.0.1:4000/new_db</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># heredoc 执行</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql mysql://root@127.0.0.1:4000/ <span class="op">&lt;&lt;EOF</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="st">CREATE DATABASE IF NOT EXISTS test;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="st">USE test;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="st">CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY, name VARCHAR(100));</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="st">INSERT INTO users VALUES (1, &#39;alice&#39;);</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
+<h4 id="批量执行参数">2.4.3 批量执行参数</h4>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 40%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>参数</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--file</code> / <code>-f</code></td>
+<td>-</td>
+<td>SQL 文件路径或目录</td>
+</tr>
+<tr>
+<td><code>--on-error</code></td>
+<td><code>stop</code></td>
+<td>错误处理：<code>stop</code>（停止）、<code>continue</code>（继续）、<code>abort</code>（回滚并停止）</td>
+</tr>
+<tr>
+<td><code>--delimiter</code></td>
+<td><code>;</code></td>
+<td>语句分隔符</td>
+</tr>
+<tr>
+<td><code>--echo</code></td>
+<td><code>false</code></td>
+<td>执行前回显 SQL</td>
+</tr>
+<tr>
+<td><code>--force</code></td>
+<td><code>false</code></td>
+<td>忽略连接错误继续执行</td>
+</tr>
+<tr>
+<td><code>--max-rows</code></td>
+<td><code>0</code>（无限制）</td>
+<td>结果集最大行数</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td><code>false</code></td>
+<td>仅解析不执行</td>
+</tr>
+</tbody>
+</table>
+<h3 id="模块四输出格式化-format">2.5 模块四：输出格式化 (format)</h3>
+<h4 id="表格格式-table">2.5.1 表格格式 (table)</h4>
+<p>默认格式，适合交互式查看：</p>
+<pre><code>+----+-------+---------------------+
+| id | name  | created_at          |
++----+-------+---------------------+
+|  1 | alice | 2026-05-17 10:00:00 |
+|  2 | bob   | 2026-05-17 10:05:00 |
++----+-------+---------------------+
+2 rows in set (0.01 sec)</code></pre>
+<h4 id="csv-格式">2.5.2 CSV 格式</h4>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--format</span> csv <span class="at">-e</span> <span class="st">&quot;SELECT * FROM users&quot;</span> <span class="op">&gt;</span> users.csv</span></code></pre></div>
+<p>输出带 BOM 的 UTF-8 CSV（Excel 兼容）：</p>
+<pre class="csv"><code>id,name,created_at
+1,&quot;alice&quot;,&quot;2026-05-17 10:00:00&quot;
+2,&quot;bob&quot;,&quot;2026-05-17 10:05:00&quot;</code></pre>
+<h4 id="json-格式">2.5.3 JSON 格式</h4>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--format</span> json <span class="at">-e</span> <span class="st">&quot;SELECT * FROM users&quot;</span></span></code></pre></div>
+<p>输出：</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;alice&quot;</span><span class="fu">,</span> <span class="dt">&quot;created_at&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-05-17 10:00:00&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;bob&quot;</span><span class="fu">,</span> <span class="dt">&quot;created_at&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-05-17 10:05:00&quot;</span><span class="fu">}</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<p>JSON 格式子选项： - <code>json</code>：紧凑数组 -
+<code>json-pretty</code>：美化输出 - <code>json-rows</code>：每行一个
+JSON 对象（NDJSON）</p>
+<h4 id="tsv-格式">2.5.4 TSV 格式</h4>
+<p>Tab 分隔，适合程序间传递：</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--format</span> tsv <span class="at">-e</span> <span class="st">&quot;SELECT * FROM users&quot;</span></span></code></pre></div>
+<h4 id="垂直表格格式">2.5.5 垂直表格格式</h4>
+<p>适合宽表查看：</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--format</span> vertical <span class="at">-e</span> <span class="st">&quot;SELECT * FROM users WHERE id = 1&quot;</span></span></code></pre></div>
+<p>输出：</p>
+<pre><code>*************************** 1. row ***************************
+      id: 1
+    name: alice
+created_at: 2026-05-17 10:00:00
+1 row in set (0.00 sec)</code></pre>
+<h3 id="模块五日志与诊断">2.6 模块五：日志与诊断</h3>
+<h4 id="查询日志">2.6.1 查询日志</h4>
+<p>可选地将所有执行的 SQL 记录到日志文件：</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--log</span> /path/to/query.log mysql://root@127.0.0.1:4000/</span></code></pre></div>
+<p>日志格式：</p>
+<pre><code>[2026-05-17T10:00:00.000Z] [conn:1] [timing:12.5ms] [rows:2] SELECT * FROM users;
+[2026-05-17T10:00:01.000Z] [conn:1] [timing:0.5ms] [rows:0] USE test;</code></pre>
+<h4 id="慢查询提示">2.6.2 慢查询提示</h4>
+<p>当查询执行时间超过阈值（默认 1s，可通过 <code>--slow-threshold</code>
+配置）时，自动高亮显示警告：</p>
+<pre><code>mysql&gt; SELECT COUNT(*) FROM large_table;
++----------+
+| COUNT(*) |
++----------+
+| 10000000 |
++----------+
+1 row in set (2.35 sec) ⚠ slow query (&gt;1.00s)</code></pre>
+<hr />
+<h2 id="命令行接口设计">3. 命令行接口设计</h2>
+<h3 id="完整命令参数">3.1 完整命令参数</h3>
+<pre><code>Usage:
+  tiup sql [flags] [DSN|connection-name]
+
+Examples:
+  tiup sql mysql://root@password@127.0.0.1:4000/test_db
+  tiup sql --host 127.0.0.1 --port 4000 --user root test_db
+  tiup sql -c local-dev
+
+Flags:
+  连接选项:
+    -h, --host string          数据库主机地址 (default &quot;127.0.0.1&quot;)
+    -P, --port int             数据库端口 (default 4000)
+    -u, --user string          用户名 (default &quot;root&quot;)
+    -p, --password string      密码（推荐交互式输入）
+        --database string      默认数据库
+        --socket string        Unix socket 路径
+        --protocol string      连接协议：tcp, unix (default &quot;tcp&quot;)
+
+  TLS 选项:
+        --tls                  启用 TLS
+        --tls-ca string        CA 证书文件路径
+        --tls-cert string      客户端证书文件路径
+        --tls-key string       客户端私钥文件路径
+        --tls-skip-verify      跳过证书验证
+
+  Playground 发现:
+        --playground           自动发现并连接本地 playground 实例
+        --cluster string       通过 TiUP cluster 拓扑获取连接信息
+        --component string     连接的组件类型，配合 --cluster 使用 (default &quot;tidb&quot;)
+
+  连接管理:
+    -c, --connection string    使用已保存的连接配置名称
+        --save-connection      保存当前连接到配置
+        --list-connections     列出所有已保存的连接
+        --delete-connection string  删除指定连接配置
+
+  执行选项:
+    -e, --execute string       执行 SQL 后退出（非交互模式）
+    -f, --file strings         执行 SQL 文件（非交互模式）
+        --delimiter string     语句分隔符 (default &quot;;&quot;)
+        --on-error string      错误处理策略：stop, continue, abort (default &quot;stop&quot;)
+        --dry-run              仅解析不执行
+        --echo                 回显执行的 SQL
+        --force                忽略连接错误
+
+  输出选项:
+        --format string        输出格式：table, csv, json, json-pretty, json-rows, tsv, vertical (default &quot;table&quot;)
+        --no-header            不显示列标题
+        --separator string     CSV/TSV 分隔符
+        --pager string         分页命令（如 &quot;less -S&quot;）
+        --timing               显示查询执行时间 (default true)
+        --slow-threshold duration  慢查询阈值 (default &quot;1s&quot;)
+
+  日志选项:
+        --log string           SQL 查询日志文件路径
+
+  通用选项:
+        --help                 显示帮助信息
+        --version              显示版本信息</code></pre>
+<h3 id="使用示例">3.2 使用示例</h3>
+<div class="sourceCode" id="cb23"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 快速连接本地 TiDB</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 连接远程 MySQL</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql mysql://admin:secret@10.0.1.50:3306/production</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 执行单条 SQL</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">-e</span> <span class="st">&quot;SHOW DATABASES&quot;</span> mysql://root@127.0.0.1:4000/</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 执行 SQL 文件</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">-f</span> init_schema.sql <span class="at">-f</span> seed_data.sql mysql://root@127.0.0.1:4000/app_db</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 导出为 CSV</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">--format</span> csv <span class="at">-e</span> <span class="st">&quot;SELECT * FROM orders&quot;</span> mysql://root@127.0.0.1:4000/shop <span class="op">&gt;</span> orders.csv</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 6. 使用保存的连接</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="ex">tiup</span> sql <span class="at">-c</span> prod</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 7. 管道执行</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> query.sql <span class="kw">|</span> <span class="ex">tiup</span> sql mysql://root@127.0.0.1:4000/</span></code></pre></div>
+<hr />
+<h2 id="项目结构与代码组织">4. 项目结构与代码组织</h2>
+<h3 id="目录结构">4.1 目录结构</h3>
+<pre><code>components/sql/
+├── main.go                  # 入口：cobra 命令注册和根命令
+├── cmd/
+│   ├── root.go              # 根命令定义
+│   ├── connect.go           # 连接相关子命令和选项
+│   └── connection_mgmt.go   # 连接配置管理子命令
+├── connect/
+│   ├── dsn.go               # DSN 解析与构造
+│   ├── pool.go              # 连接池管理
+│   ├── tls.go               # TLS 配置与验证
+│   ├── playground.go        # Playground 实例发现
+│   └── config.go            # 连接配置文件读写
+├── repl/
+│   ├── repl.go              # REPL 主循环
+│   ├── completer.go         # 自动补全
+│   ├── highlighter.go       # SQL 语法高亮
+│   ├── meta.go              # 元命令解析与执行
+│   └── history.go           # 历史记录管理
+├── batch/
+│   ├── executor.go          # 批量执行器
+│   ├── parser.go            # SQL 语句分割与解析
+│   └── reader.go            # 文件/管道输入读取
+├── format/
+│   ├── formatter.go         # 格式化器接口
+│   ├── table.go             # 表格格式
+│   ├── csv.go               # CSV 格式
+│   ├── json.go              # JSON 格式
+│   ├── tsv.go               # TSV 格式
+│   └── vertical.go          # 垂直表格格式
+├── log/
+│   ├── logger.go            # 查询日志记录
+│   └── slow.go              # 慢查询检测
+├── endpoint.go              # 端点类型定义
+└── version.go               # 版本信息</code></pre>
+<h3 id="核心类型定义">4.2 核心类型定义</h3>
+<div class="sourceCode" id="cb25"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">// connect/dsn.go</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="kw">package</span> connect</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> DSNConfig <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    Host         <span class="dt">string</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    Port         <span class="dt">int</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    User         <span class="dt">string</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    Password     <span class="dt">string</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    Database     <span class="dt">string</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    Protocol     <span class="dt">string</span> <span class="co">// &quot;tcp&quot; or &quot;unix&quot;</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    Socket       <span class="dt">string</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    TLSConfig    <span class="op">*</span>TLSConfig</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    Timeout      time<span class="op">.</span>Duration</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    ReadTimeout  time<span class="op">.</span>Duration</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    WriteTimeout time<span class="op">.</span>Duration</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>    Charset      <span class="dt">string</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>    Collation    <span class="dt">string</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>    Params       <span class="kw">map</span><span class="op">[</span><span class="dt">string</span><span class="op">]</span><span class="dt">string</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> ParseDSN<span class="op">(</span>input <span class="dt">string</span><span class="op">)</span> <span class="op">(*</span>DSNConfig<span class="op">,</span> <span class="dt">error</span><span class="op">)</span> <span class="op">{</span> <span class="co">/* ... */</span> <span class="op">}</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> <span class="op">(</span>c <span class="op">*</span>DSNConfig<span class="op">)</span> ToMySQLDSN<span class="op">()</span> <span class="dt">string</span> <span class="op">{</span> <span class="co">/* ... */</span> <span class="op">}</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="co">// connect/config.go</span></span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> ConnectionEntry <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>    Name     <span class="dt">string</span>     <span class="st">`yaml:&quot;name&quot;`</span></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>    Host     <span class="dt">string</span>     <span class="st">`yaml:&quot;host&quot;`</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>    Port     <span class="dt">int</span>        <span class="st">`yaml:&quot;port&quot;`</span></span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>    User     <span class="dt">string</span>     <span class="st">`yaml:&quot;user&quot;`</span></span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>    Database <span class="dt">string</span>     <span class="st">`yaml:&quot;database&quot;`</span></span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>    TLS      <span class="op">*</span>TLSConfig <span class="st">`yaml:&quot;tls,omitempty&quot;`</span></span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> ConfigFile <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>    Connections <span class="op">[]</span>ConnectionEntry <span class="st">`yaml:&quot;connections&quot;`</span></span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="格式化器接口">4.3 格式化器接口</h3>
+<div class="sourceCode" id="cb26"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">// format/formatter.go</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Formatter <span class="kw">interface</span> <span class="op">{</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// FormatHeaders 输出列标题</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    FormatHeaders<span class="op">(</span>w io<span class="op">.</span>Writer<span class="op">,</span> columns <span class="op">[]</span><span class="dt">string</span><span class="op">)</span> <span class="dt">error</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// FormatRow 输出一行数据</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    FormatRow<span class="op">(</span>w io<span class="op">.</span>Writer<span class="op">,</span> row <span class="op">[]</span><span class="kw">interface</span><span class="op">{})</span> <span class="dt">error</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// FormatFooter 输出结果尾部信息（行数、耗时）</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    FormatFooter<span class="op">(</span>w io<span class="op">.</span>Writer<span class="op">,</span> rowCount <span class="dt">int</span><span class="op">,</span> duration time<span class="op">.</span>Duration<span class="op">)</span> <span class="dt">error</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Flush 刷新输出缓冲</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    Flush<span class="op">()</span> <span class="dt">error</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<hr />
+<h2 id="构建与集成">5. 构建与集成</h2>
+<h3 id="makefile-集成">5.1 Makefile 集成</h3>
+<p>在根 <code>Makefile</code> 中添加 <code>sql</code> 构建目标：</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode makefile"><code class="sourceCode makefile"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="ot">.PHONY:</span><span class="dt"> sql</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="dv">sql:</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="er">    </span><span class="ch">@</span><span class="co"># Target: build tiup-sql component</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="ch">$(</span><span class="dt">GOBUILD</span><span class="ch">)</span> -ldflags <span class="st">&#39;</span><span class="ch">$(</span><span class="dt">LDFLAGS</span><span class="ch">)</span><span class="st">&#39;</span> -o bin/tiup-sql ./components/sql</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="ot">.PHONY:</span><span class="dt"> components</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="dv">components:</span><span class="dt"> playground client cluster dm sql server</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="er">    </span><span class="ch">@</span><span class="co"># Target: build all tiup components</span></span></code></pre></div>
+<h3 id="依赖管理">5.2 依赖管理</h3>
+<p>新增依赖（已有部分在 <code>go.mod</code> 中）：</p>
+<table>
+<thead>
+<tr>
+<th>依赖</th>
+<th>用途</th>
+<th>是否新增</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>github.com/xo/usql</code></td>
+<td>SQL REPL 引擎</td>
+<td>已存在</td>
+</tr>
+<tr>
+<td><code>github.com/go-sql-driver/mysql</code></td>
+<td>MySQL/TiDB 驱动</td>
+<td>已存在</td>
+</tr>
+<tr>
+<td><code>github.com/spf13/cobra</code></td>
+<td>CLI 框架</td>
+<td>已存在</td>
+</tr>
+<tr>
+<td><code>golang.org/x/term</code></td>
+<td>密码密文输入</td>
+<td>已存在</td>
+</tr>
+<tr>
+<td><code>gopkg.in/yaml.v3</code></td>
+<td>连接配置文件解析</td>
+<td>已存在</td>
+</tr>
+<tr>
+<td><code>github.com/olekukonko/tablewriter</code></td>
+<td>表格输出格式化</td>
+<td>需确认</td>
+</tr>
+</tbody>
+</table>
+<h3 id="测试策略">5.3 测试策略</h3>
+<pre><code>components/sql/
+├── connect/
+│   ├── dsn_test.go          # DSN 解析测试
+│   ├── pool_test.go         # 连接池测试
+│   └── config_test.go       # 配置文件读写测试
+├── repl/
+│   ├── completer_test.go    # 补全逻辑测试
+│   ├── meta_test.go         # 元命令解析测试
+│   └── repl_test.go         # REPL 集成测试
+├── batch/
+│   ├── executor_test.go     # 批量执行测试
+│   └── parser_test.go       # SQL 分割测试
+└── format/
+    ├── table_test.go        # 表格格式测试
+    ├── csv_test.go          # CSV 格式测试
+    └── json_test.go         # JSON 格式测试</code></pre>
+<p>测试要点： - <strong>单元测试</strong>：DSN 解析的各种输入格式、SQL
+语句分割（含边界情况如字符串中的分号）、输出格式化的各种数据类型 -
+<strong>集成测试</strong>：需要真实 MySQL/TiDB 连接，通过 Docker
+启动测试实例 - <strong>安全测试</strong>：密码不以明文出现在日志中、TLS
+证书验证、SQL 注入防护</p>
+<hr />
+<h2 id="安全考量">6. 安全考量</h2>
+<h3 id="密码安全">6.1 密码安全</h3>
+<ul>
+<li><strong>命令行参数</strong>：不支持 <code>--password=xxx</code>
+直接传值（避免 <code>ps</code> 泄露），<code>-p</code>
+无参数时交互式输入，<code>-p xxx</code> 仅支持从环境变量读取</li>
+<li><strong>连接配置文件</strong>：密码字段可选使用加密存储，运行时通过
+OS 密钥链或 <code>TIUP_SQL_PASSWORD_&lt;NAME&gt;</code>
+环境变量提供</li>
+<li><strong>日志安全</strong>：查询日志中不记录密码（连接 DSN
+中密码部分以 <code>***</code> 替换）</li>
+</ul>
+<h3 id="tls-证书验证">6.2 TLS 证书验证</h3>
+<ul>
+<li>默认启用证书验证（<code>InsecureSkipVerify: false</code>）</li>
+<li><code>--tls-skip-verify</code> 必须显式指定，并在连接时输出警告</li>
+<li>证书路径不存在时给出明确错误提示</li>
+</ul>
+<h3 id="sql-注入防护">6.3 SQL 注入防护</h3>
+<ul>
+<li>所有元数据查询（数据库名、表名、列名）使用参数化查询</li>
+<li>自动补全的候选列表从 <code>INFORMATION_SCHEMA</code>
+获取，不经由用户输入拼接</li>
+</ul>
+<h3 id="输入安全">6.4 输入安全</h3>
+<ul>
+<li>文件执行限制：仅读取 <code>.sql</code> 文件（可通过
+<code>--file</code> 显式指定其他扩展名）</li>
+<li>不支持 <code>SYSTEM</code> 命令或
+<code>LOAD DATA LOCAL INFILE</code> 的自动执行（需通过元命令
+<code>\system</code> 显式调用）</li>
+</ul>
+<hr />
+<h2 id="里程碑规划">7. 里程碑规划</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>阶段</th>
+<th>内容</th>
+<th>预估</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M1: 核心连接</strong></td>
+<td>DSN 解析、基础连接、REPL、表格输出、Playground 发现</td>
+<td>3 天</td>
+</tr>
+<tr>
+<td><strong>M2: 格式与批量</strong></td>
+<td>CSV/JSON/TSV/垂直格式、文件执行、管道执行、错误处理</td>
+<td>2 天</td>
+</tr>
+<tr>
+<td><strong>M3: 增强功能</strong></td>
+<td>自动补全、连接配置管理、TLS 支持、元命令</td>
+<td>2 天</td>
+</tr>
+<tr>
+<td><strong>M4: 测试与文档</strong></td>
+<td>单元测试、集成测试、安全测试、用户文档</td>
+<td>2 天</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="与现有-tiup-client-的兼容性">8. 与现有 <code>tiup client</code>
+的兼容性</h2>
+<h3 id="迁移策略">8.1 迁移策略</h3>
+<ul>
+<li><code>tiup sql</code> 作为 <code>tiup client</code>
+的增强替代，初期两者并存</li>
+<li><code>tiup sql --playground</code> 行为与 <code>tiup client</code>
+完全一致</li>
+<li>后续版本中 <code>tiup client</code> 标记为 deprecated，引导用户使用
+<code>tiup sql</code></li>
+</ul>
+<h3 id="行为差异">8.2 行为差异</h3>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th><code>tiup client</code></th>
+<th><code>tiup sql</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连接目标</td>
+<td>仅本地 playground</td>
+<td>任意 MySQL/TiDB</td>
+</tr>
+<tr>
+<td>DSN 支持</td>
+<td>无</td>
+<td>完整 DSN 支持</td>
+</tr>
+<tr>
+<td>输出格式</td>
+<td>仅表格</td>
+<td>表格/CSV/JSON/TSV/垂直</td>
+</tr>
+<tr>
+<td>文件执行</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>自动补全</td>
+<td>无</td>
+<td>SQL 关键字 + 元数据</td>
+</tr>
+<tr>
+<td>连接配置</td>
+<td>无</td>
+<td>持久化连接管理</td>
+</tr>
+<tr>
+<td>TLS</td>
+<td>不支持</td>
+<td>完整 TLS 支持</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

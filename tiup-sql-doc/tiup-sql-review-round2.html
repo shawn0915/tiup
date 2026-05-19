@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>tiup sql 第二轮评审报告</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">body{font-family:"Segoe UI",system-ui,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1a1a1a}
+h1{border-bottom:2px solid #4472C4;padding-bottom:.3em;color:#4472C4}
+h2{border-bottom:1px solid #ddd;padding-bottom:.2em;margin-top:2em}
+h3{color:#5b9bd5}
+table{border-collapse:collapse;width:100%;margin:1em 0}
+th,td{border:1px solid #ddd;padding:.5em .75em;text-align:left}
+th{background:#f5f5f5;font-weight:600}
+tr:nth-child(even){background:#fafafa}
+code{background:#f4f4f4;padding:.15em .3em;border-radius:3px;font-size:.9em}
+pre{background:#2d2d2d;color:#f8f8f2;padding:1em;border-radius:6px;overflow-x:auto}
+pre code{background:none;padding:0;color:inherit}
+blockquote{border-left:4px solid #4472C4;padding:.5em 1em;margin:1em 0;background:#f9f9f9}
+ul,ol{padding-left:1.5em}
+#TOC{background:#f5f7fa;padding:1em 1.5em;border-radius:8px;margin-bottom:2em}
+#TOC ul{list-style:none;padding-left:0}
+#TOC>ul{padding-left:1em}
+#TOC li{margin:.3em 0}
+a{color:#4472C4;text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid #ddd;margin:2em 0}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">tiup sql 第二轮评审报告</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#tiup-sql-第二轮最终评审报告" id="toc-tiup-sql-第二轮最终评审报告">tiup sql 第二轮（最终）评审报告</a>
+<ul>
+<li><a href="#评审概要" id="toc-评审概要">评审概要</a></li>
+<li><a href="#修复验证" id="toc-修复验证">修复验证</a>
+<ul>
+<li><a href="#m1.-sql-字符串内分号分割-已修复" id="toc-m1.-sql-字符串内分号分割-已修复">M1. SQL 字符串内分号分割 — ✅
+已修复</a></li>
+<li><a href="#m2.-计数器累积-已修复" id="toc-m2.-计数器累积-已修复">M2.
+计数器累积 — ✅ 已修复</a></li>
+<li><a href="#m3.-垂直格式化性能-已修复" id="toc-m3.-垂直格式化性能-已修复">M3. 垂直格式化性能 — ✅
+已修复</a></li>
+<li><a href="#m4.-测试环境变量恢复-已修复" id="toc-m4.-测试环境变量恢复-已修复">M4. 测试环境变量恢复 — ✅
+已修复</a></li>
+</ul></li>
+<li><a href="#文档验证" id="toc-文档验证">文档验证</a>
+<ul>
+<li><a href="#tiup-sql.md-已创建" id="toc-tiup-sql.md-已创建"><code>tiup-sql.md</code> — ✅
+已创建</a></li>
+</ul></li>
+<li><a href="#安全合规最终检查" id="toc-安全合规最终检查">安全合规最终检查</a></li>
+<li><a href="#总结" id="toc-总结">总结</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="tiup-sql-第二轮最终评审报告">tiup sql
+第二轮（最终）评审报告</h1>
+<p><strong>评审人</strong>：全能表妹（安全审计）
+<strong>评审时间</strong>：2026-05-18
+<strong>评审范围</strong>：第二轮修复的 4
+个问题（M1-M4）、更新后的测试用例、<code>tiup-sql.md</code> 变更文档</p>
+<hr />
+<h2 id="评审概要">评审概要</h2>
+<p>对 <span class="citation" data-cites="素子">@素子</span>
+第二轮修复进行逐项验证。本轮修复涉及
+<code>batch/executor.go</code>、<code>format/vertical.go</code>、<code>connect/config_test.go</code>
+三个文件。</p>
+<p><strong>结论：4
+个修复全部验证通过，无新增阻断或高严重度问题。代码可以进入编译验证和集成测试阶段。</strong></p>
+<hr />
+<h2 id="修复验证">修复验证</h2>
+<h3 id="m1.-sql-字符串内分号分割-已修复">M1. SQL 字符串内分号分割 — ✅
+已修复</h3>
+<p><strong>文件</strong>：<code>batch/executor.go:227-281</code>（splitStatements）、<code>batch/executor.go:159-225</code>（readStatements）</p>
+<p><strong>验证</strong>： - <code>splitStatements()</code>
+现在逐字符扫描，跟踪 <code>inSingleQuote</code> 和
+<code>inDoubleQuote</code> 状态 - 正确处理
+<code>&#39;&#39;</code>（双单引号转义）和 <code>&quot;&quot;</code>（双双引号转义） -
+在引号外的分号处分割，引号内的分号保留 - <code>readStatements()</code>
+也增加了相同的引号感知逻辑 - 新增 5
+个测试用例覆盖：单引号内分号、双引号内分号、转义单引号、混合引用、普通无引号场景</p>
+<p><strong>小问题（Low，不影响正确性）</strong>：<code>readStatements()</code>
+在检测到行尾分隔符后调用 <code>splitStatements()</code> 进行二次处理（第
+183-186 行）。这在功能上正确但存在冗余：当 <code>readStatements</code>
+已经追踪了引号状态并在正确的位置分割时，再次调用
+<code>splitStatements</code>
+会重复一次引号扫描。不过这是一个性能微优化点，不影响正确性，不影响进度。</p>
+<p><strong>MySQL 转义说明</strong>：当前实现处理 <code>&#39;&#39;</code>
+双单引号转义（标准 SQL），未处理 <code>\&#39;</code> 反斜杠转义（MySQL
+扩展模式）。在默认 <code>sql_mode</code> 下 MySQL
+两种转义都支持，但反斜杠转义仅在 <code>NO_BACKSLASH_ESCAPES</code>
+模式关闭时生效。对于大多数实际使用场景（<code>INSERT INTO t VALUES (&#39;hello;world&#39;)</code>），当前实现已足够。</p>
+<h3 id="m2.-计数器累积-已修复">M2. 计数器累积 — ✅ 已修复</h3>
+<p><strong>文件</strong>：<code>batch/executor.go:283-311</code></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> <span class="op">(</span>e <span class="op">*</span>Executor<span class="op">)</span> execStatements<span class="op">(</span>statements <span class="op">[]</span><span class="dt">string</span><span class="op">)</span> <span class="dt">error</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> successes<span class="op">,</span> failures <span class="dt">int</span>  <span class="co">// 局部变量</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>验证</strong>：<code>successes</code> 和
+<code>failures</code> 从 <code>Executor</code> 结构体字段移至
+<code>execStatements()</code> 局部变量。<code>Executor</code>
+结构体不再包含这两个字段（第 42-47 行确认）。多次调用
+<code>ExecString</code>/<code>ExecFiles</code>/<code>ExecStdin</code>
+不再累积计数。</p>
+<h3 id="m3.-垂直格式化性能-已修复">M3. 垂直格式化性能 — ✅ 已修复</h3>
+<p><strong>文件</strong>：<code>format/vertical.go:50-55</code></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i<span class="op">,</span> row <span class="op">:=</span> <span class="kw">range</span> rows <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    maxLabelLen <span class="op">:=</span> <span class="dv">0</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _<span class="op">,</span> c <span class="op">:=</span> <span class="kw">range</span> columns <span class="op">{</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> cl <span class="op">:=</span> utf8<span class="op">.</span>RuneCountInString<span class="op">(</span>c<span class="op">);</span> cl <span class="op">&gt;</span> maxLabelLen <span class="op">{</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            maxLabelLen <span class="op">=</span> cl</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j<span class="op">,</span> col <span class="op">:=</span> <span class="kw">range</span> columns <span class="op">{</span></span></code></pre></div>
+<p><strong>验证</strong>：<code>maxLabelLen</code>
+计算从列内循环（原嵌套在 <code>for j, col</code>
+内部）提升到行循环顶层。当前复杂度 O(rows × cols)，不再有 O(rows ×
+cols²) 的冗余计算。</p>
+<p><strong>小问题（Low）</strong>：<code>maxLabelLen</code> 仅依赖
+<code>columns</code>，理论上只需计算一次（O(cols)），放到所有行循环之前即可。当前每行都计算一次（O(rows
+× cols)），虽然比修复前的 O(rows × cols²)
+好很多，但仍不是最优。不影响进度。</p>
+<h3 id="m4.-测试环境变量恢复-已修复">M4. 测试环境变量恢复 — ✅
+已修复</h3>
+<p><strong>文件</strong>：<code>connect/config_test.go:108-126</code></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> setTestHome<span class="op">(</span>dir <span class="dt">string</span><span class="op">)</span> <span class="kw">func</span><span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    origHome<span class="op">,</span> hadHome <span class="op">:=</span> os<span class="op">.</span>LookupEnv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    origUserProfile<span class="op">,</span> hadUserProfile <span class="op">:=</span> os<span class="op">.</span>LookupEnv<span class="op">(</span><span class="st">&quot;USERPROFILE&quot;</span><span class="op">)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    os<span class="op">.</span>Setenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">,</span> dir<span class="op">)</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    os<span class="op">.</span>Setenv<span class="op">(</span><span class="st">&quot;USERPROFILE&quot;</span><span class="op">,</span> dir<span class="op">)</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">func</span><span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> hadHome <span class="op">{</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>            os<span class="op">.</span>Setenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">,</span> origHome<span class="op">)</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            os<span class="op">.</span>Unsetenv<span class="op">(</span><span class="st">&quot;HOME&quot;</span><span class="op">)</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> hadUserProfile <span class="op">{</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>            os<span class="op">.</span>Setenv<span class="op">(</span><span class="st">&quot;USERPROFILE&quot;</span><span class="op">,</span> origUserProfile<span class="op">)</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            os<span class="op">.</span>Unsetenv<span class="op">(</span><span class="st">&quot;USERPROFILE&quot;</span><span class="op">)</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>验证</strong>： - 使用 <code>os.LookupEnv</code>
+保存原始值和是否存在 - 同时处理 <code>HOME</code>（Unix）和
+<code>USERPROFILE</code>（Windows） -
+正确恢复：存在则恢复原始值，不存在则 <code>Unsetenv</code> -
+两个测试用例都已更新使用 <code>setTestHome()</code> +
+<code>defer restore()</code></p>
+<hr />
+<h2 id="文档验证">文档验证</h2>
+<h3 id="tiup-sql.md-已创建"><code>tiup-sql.md</code> — ✅ 已创建</h3>
+<p><strong>路径</strong>：<code>tiup-repo/tiup-sql.md</code></p>
+<p><strong>验证</strong>： - 完整的变更文件列表（18 个源文件 + 5
+个测试文件） - 两轮修复历史记录完整（第一轮 6 项 + 第二轮 4 项） -
+安全说明 S1（<code>TIUP_SQL_PASSWORD</code>
+风险）包含具体攻击路径、影响范围和缓解建议 - 文档格式清晰，结构合理</p>
+<hr />
+<h2 id="安全合规最终检查">安全合规最终检查</h2>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>密码不以命令行明文传递</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>密码交互式密文输入</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>TLS 证书验证默认启用</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>--tls-skip-verify</code> 需显式指定</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>元命令 SQL 注入防护</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>日志中密码脱敏</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>连接配置文件权限 0o600</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>连接配置名称安全过滤</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>SQL 字符串内分号正确处理</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>环境变量密码风险已文档化</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>安全问题变更文档 <code>tiup-sql.md</code></td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="总结">总结</h2>
+<p><strong>所有已知阻断和高严重度问题均已修复验证通过。</strong>
+代码具备进入编译验证和集成测试的条件。</p>
+<p><strong>剩余低优先级项</strong>（可后续迭代处理）： -
+<code>readStatements</code> 中 <code>splitStatements</code>
+的二次调用冗余 - <code>vertical.go</code> 的 <code>maxLabelLen</code>
+可进一步优化到 O(cols) - MySQL <code>\&#39;</code>
+反斜杠转义支持（NO_BACKSLASH_ESCAPES 模式） -
+缺失的高级功能（自动补全、语法高亮、历史持久化） - CJK 字符宽度对齐、CSV
+BOM 等</p>
+<p><strong><span class="citation" data-cites="wdrhhwx">@wdrhhwx</span>
+所有问题修复并验证没有问题，可以进行编译验证和集成测试。</strong></p>
+</body>
+</html>

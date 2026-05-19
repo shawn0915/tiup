@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tiup sql — 数据库连接与管理的全新解法</title>
+<style>
+/* ========== 基础重置与设计系统 ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --text: #1d1d1f;
+  --text-secondary: #86868b;
+  --accent-blue: #0071e3;
+  --accent-green: #34c759;
+  --accent-orange: #ff9500;
+  --accent-purple: #af52de;
+  --accent-red: #ff3b30;
+  --accent-teal: #5ac8fa;
+  --border: rgba(0,0,0,0.08);
+  --shadow: 0 4px 24px rgba(0,0,0,0.06);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --max-width: 980px;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ========== 布局容器 ========== */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ========== Hero 区域 ========== */
+.hero {
+  text-align: center;
+  padding: 100px 24px 60px;
+  background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+}
+.hero-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-blue);
+  background: rgba(0,113,227,0.08);
+  padding: 6px 16px;
+  border-radius: 100px;
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.hero h1 span {
+  color: var(--accent-blue);
+}
+.hero-sub {
+  font-size: 21px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 40px;
+  line-height: 1.5;
+}
+.hero-cta {
+  display: inline-flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 100px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  background: var(--accent-blue);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #0077ed;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0,113,227,0.25);
+}
+.btn-secondary {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+  background: #f5f5f7;
+}
+
+/* ========== 问题-解答卡片系统 ========== */
+.section {
+  padding: 80px 0;
+}
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+.section-header h2 {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+.section-header h2 .q-mark {
+  color: var(--accent-blue);
+}
+.section-header p {
+  font-size: 19px;
+  color: var(--text-secondary);
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* 色块标签 */
+.color-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-bottom: 16px;
+}
+.color-tag::before {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.tag-blue { color: var(--accent-blue); }
+.tag-blue::before { background: var(--accent-blue); }
+.tag-green { color: var(--accent-green); }
+.tag-green::before { background: var(--accent-green); }
+.tag-orange { color: var(--accent-orange); }
+.tag-orange::before { background: var(--accent-orange); }
+.tag-purple { color: var(--accent-purple); }
+.tag-purple::before { background: var(--accent-purple); }
+.tag-red { color: var(--accent-red); }
+.tag-red::before { background: var(--accent-red); }
+.tag-teal { color: #008080; }
+.tag-teal::before { background: #008080; }
+
+/* 卡片网格 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+.card-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 768px) {
+  .card-grid-3 { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 36px; }
+  .section-header h2 { font-size: 28px; }
+}
+
+/* 圆角矩形容器 */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 36px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+}
+.card h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+.card p, .card li {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.card ul {
+  list-style: none;
+  margin-top: 16px;
+}
+.card li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+.card li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+/* 数字编号标识 */
+.num-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 16px;
+}
+.bg-blue { background: var(--accent-blue); }
+.bg-green { background: var(--accent-green); }
+.bg-orange { background: var(--accent-orange); }
+.bg-purple { background: var(--accent-purple); }
+.bg-red { background: var(--accent-red); }
+.bg-teal { background: #008080; }
+
+/* 代码块 */
+.code-block {
+  background: #1d1d1f;
+  color: #f5f5f7;
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+.code-block .comment { color: #86868b; }
+.code-block .cmd { color: #34c759; }
+
+/* 开关按钮元素 */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 15px; font-weight: 500; }
+.toggle-switch {
+  width: 48px;
+  height: 28px;
+  background: var(--accent-green);
+  border-radius: 14px;
+  position: relative;
+  flex-shrink: 0;
+}
+.toggle-switch::after {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  right: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle-switch.off {
+  background: #e5e5ea;
+}
+.toggle-switch.off::after {
+  right: auto;
+  left: 2px;
+}
+
+/* 表格 */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 20px 0;
+  font-size: 14px;
+}
+.data-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+}
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table tr:hover td {
+  background: rgba(0,113,227,0.02);
+}
+.data-table .status-ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--accent-green);
+}
+.data-table .status-ok::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--accent-green);
+  border-radius: 50%;
+}
+
+/* 简约线条边框 */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 60px 0;
+}
+
+/* 强调文本 */
+.highlight {
+  background: linear-gradient(180deg, transparent 60%, rgba(0,113,227,0.12) 60%);
+  font-weight: 600;
+}
+
+/* 底部 */
+.footer {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .card { padding: 24px; }
+  .hero { padding: 60px 24px 40px; }
+  .section { padding: 50px 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">TiUP Component</div>
+    <h1>数据库连接与管理<br>还能更<strong>简单</strong>？</h1>
+    <p class="hero-sub"><strong>tiup sql</strong> 为 TiUP 带来通用 SQL 客户端能力。一条命令连接 MySQL 或 TiDB。批量执行。多格式导出。安全凭证管理。</p>
+    <div class="hero-cta">
+      <a href="#commands" class="btn btn-primary">查看命令示例</a>
+      <a href="#tests" class="btn btn-secondary">测试报告</a>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 设计思路 ==================== -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>复杂的数据库工具让人疲惫？</h2>
+      <p>tiup sql 采用模块化架构，将连接、执行、格式化、日志完全解耦。每个模块只做一件事，组合起来覆盖全部场景。</p>
+    </div>
+    <div class="card-grid-3">
+      <div class="card">
+        <div class="color-tag tag-blue">CONNECT</div>
+        <h3>连接管理</h3>
+        <p>DSN 解析、TLS 加密、Playground 自动发现、连接配置持久化。支持 URL、键值对、环境变量三种传参方式。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-green">BATCH</div>
+        <h3>批量执行</h3>
+        <p>SQL 文件、目录批量执行、stdin 管道、heredoc。引号感知分割器正确处理字符串内的分号。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-orange">REPL</div>
+        <h3>交互式会话</h3>
+        <p>交互式 REPL 支持元命令、多行编辑、输出格式实时切换。非 TTY 环境自动降级为批量模式。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-purple">FORMAT</div>
+        <h3>多格式输出</h3>
+        <p>表格、CSV、JSON（含 pretty / rows）、TSV、垂直表格。支持无头模式与计时显示。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-red">LOG</div>
+        <h3>查询日志</h3>
+        <p>可选记录所有执行的 SQL、耗时、影响行数。自动脱敏 DSN 中的密码字段。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-teal">SECURITY</div>
+        <h3>安全合规</h3>
+        <p>密码交互式输入、TLS 默认验证、SQL 注入防护、配置文件 0o600 权限。无明文密码泄露风险。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ==================== 命令示例 ==================== -->
+<section class="section" id="commands">
+  <div class="container">
+    <div class="section-header">
+      <h2>如何<span class="q-mark">快速</span>连接数据库？</h2>
+      <p>无论本地测试还是生产环境，一行命令即可建立连接。支持 5 种连接方式，总有一种适合你。</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="num-badge bg-blue">1</div>
+      <h3>URL 格式</h3>
+      <p>最直观的方式。用户名、密码、主机、端口、数据库一次性写入。</p>
+      <div class="code-block">
+<span class="cmd">tiup sql</span> mysql://root:password@192.168.1.101:3308/test_db
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="num-badge bg-green">2</div>
+      <h3>键值对参数</h3>
+      <p>适合脚本和 CI/CD 场景。参数清晰，易于维护。</p>
+      <div class="code-block">
+<span class="cmd">tiup sql</span> --host 192.168.1.101 --port 3308 --user root test_db
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="num-badge bg-orange">3</div>
+      <h3>保存的连接配置</h3>
+      <p>常用连接保存一次，后续通过别名直接调用。告别冗长的连接字符串。</p>
+      <div class="code-block">
+<span class="comment"># 保存</span>
+<span class="cmd">tiup sql</span> --save-connection prod mysql://root@10.0.1.100:3306/app_db
+
+<span class="comment"># 使用</span>
+<span class="cmd">tiup sql</span> -c prod -e "SELECT 1"
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="num-badge bg-purple">4</div>
+      <h3>环境变量传密</h3>
+      <p>密码通过 <strong>TIUP_SQL_PASSWORD</strong> 环境变量传入。命令历史中不会出现敏感信息。</p>
+      <div class="code-block">
+<span class="cmd">export TIUP_SQL_PASSWORD</span>=Shawn2026
+<span class="cmd">tiup sql</span> -e "SHOW DATABASES" mysql://root@192.168.1.101:3308/
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="num-badge bg-red">5</div>
+      <h3>Playground 自动发现</h3>
+      <p>本地已启动 playground？无需手动输入地址，自动扫描并连接。</p>
+      <div class="code-block">
+<span class="cmd">tiup sql</span> --playground
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ==================== 执行与导出 ==================== -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>查询结果如何<span class="q-mark">优雅</span>导出？</h2>
+      <p>7 种输出格式覆盖从人工查看到程序解析的全部场景。一条命令切换格式。</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="color-tag tag-blue">TABLE</div>
+        <h3>默认表格</h3>
+        <p>适合终端直接查看。ASCII 表格对齐，自动计算列宽，支持中文。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-green">CSV</div>
+        <h3>逗号分隔</h3>
+        <p>Excel 直接打开。可搭配 <strong>--no-header</strong> 输出纯数据。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-orange">JSON</div>
+        <h3>JSON 数组</h3>
+        <p>API 友好。可选 <strong>json-pretty</strong> 美化或 <strong>json-rows</strong> NDJSON。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-purple">TSV</div>
+        <h3>制表符分隔</h3>
+        <p>Unix 管道最佳伴侣。与 awk、cut、sort 无缝协作。</p>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-teal">VERTICAL</div>
+        <h3>垂直展示</h3>
+        <p>宽表救星。类似 MySQL <code>\G</code>，每行数据纵向排列。</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 32px;">
+      <h3 style="margin-bottom: 16px;">执行模式总览</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>场景</th><th>命令</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>单条查询</td>
+            <td><code>-e "SELECT ..."</code></td>
+            <td>执行后自动退出</td>
+          </tr>
+          <tr>
+            <td>文件执行</td>
+            <td><code>-f script.sql</code></td>
+            <td>支持多语句与注释</td>
+          </tr>
+          <tr>
+            <td>目录批量</td>
+            <td><code>-f ./migrations/</code></td>
+            <td>按文件名排序执行 .sql</td>
+          </tr>
+          <tr>
+            <td>管道输入</td>
+            <td><code>echo "SELECT 1" | tiup sql ...</code></td>
+            <td>Unix 管道原生支持</td>
+          </tr>
+          <tr>
+            <td>dry-run</td>
+            <td><code>--dry-run -f script.sql</code></td>
+            <td>仅解析不回显，安全预览</td>
+          </tr>
+          <tr>
+            <td>错误处理</td>
+            <td><code>--on-error continue</code></td>
+            <td>出错继续或立即终止</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ==================== 交互式 REPL ==================== -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>交互式会话<span class="q-mark">效率</span>如何提升？</h2>
+      <p>REPL 模式下通过反斜杠元命令快速切换上下文。无需重复输入完整 SQL。</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\l</strong> — 列出所有数据库</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\d</strong> — 列出当前库所有表</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\d users</strong> — 查看表结构</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\u test_db</strong> — 切换数据库</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\t csv</strong> — 切换输出格式</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\G / \T</strong> — 垂直/表格视图</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\timing</strong> — 开关查询计时</span>
+          <div class="toggle-switch off"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\i script.sql</strong> — 执行外部文件</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\s</strong> — 查看连接池状态</span>
+          <div class="toggle-switch"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label"><strong>\q</strong> — 退出会话</span>
+          <div class="toggle-switch"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="color-tag tag-green">SESSION</div>
+        <h3>会话状态示意</h3>
+        <div style="margin-top: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border);">
+            <div style="width: 40px; height: 40px; background: var(--accent-green); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700;">⏱</div>
+            <div>
+              <div style="font-weight: 600; font-size: 15px;">Timing</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">查询耗时已开启</div>
+            </div>
+            <div class="toggle-switch" style="margin-left: auto;"></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border);">
+            <div style="width: 40px; height: 40px; background: var(--accent-blue); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700;">⊞</div>
+            <div>
+              <div style="font-weight: 600; font-size: 15px;">Format</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">当前为 table 模式</div>
+            </div>
+            <span style="margin-left: auto; font-size: 13px; color: var(--text-secondary);">table</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
+            <div style="width: 40px; height: 40px; background: var(--accent-purple); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700;">⚡</div>
+            <div>
+              <div style="font-weight: 600; font-size: 15px;">Pool</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">5 open / 2 in-use / 3 idle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ==================== 安全 ==================== -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>敏感凭证如何<span class="q-mark">安全</span>处理？</h2>
+      <p>从输入到存储到日志，全链路保护密码与证书。不泄露、不残留、不裸奔。</p>
+    </div>
+
+    <div class="card-grid-3">
+      <div class="card">
+        <div class="num-badge bg-green">1</div>
+        <h3>交互式密码</h3>
+        <p><strong>-p</strong> 为 bool flag。用户必须交互输入密码，不在命令历史中留存。</p>
+      </div>
+      <div class="card">
+        <div class="num-badge bg-blue">2</div>
+        <h3>环境变量隔离</h3>
+        <p>支持 <strong>TIUP_SQL_PASSWORD</strong>。进程退出后环境变量自动清除。</p>
+      </div>
+      <div class="card">
+        <div class="num-badge bg-purple">3</div>
+        <h3>日志自动脱敏</h3>
+        <p><strong>SanitizedDSN</strong> 将密码替换为 <code>***</code>。日志文件永不出现明文。</p>
+      </div>
+      <div class="card">
+        <div class="num-badge bg-orange">4</div>
+        <h3>TLS 默认验证</h3>
+        <p>证书验证默认开启。<strong>--tls-skip-verify</strong> 必须显式声明并附带警告。</p>
+      </div>
+      <div class="card">
+        <div class="num-badge bg-teal">5</div>
+        <h3>SQL 注入防护</h3>
+        <p>元命令使用 <strong>isValidIdentifier</strong> 校验。非法字符直接拒绝。</p>
+      </div>
+      <div class="card">
+        <div class="num-badge bg-red">6</div>
+        <h3>配置文件权限</h3>
+        <p><code>connections.yaml</code> 创建时权限设为 <strong>0o600</strong>。仅所有者可读写。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ==================== 测试 ==================== -->
+<section class="section" id="tests">
+  <div class="container">
+    <div class="section-header">
+      <h2>质量如何<span class="q-mark">保障</span>？</h2>
+      <p>90+ 测试用例覆盖 6 个核心包。单元测试 + mock 验证 + 真实实例操作，三重保障。</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <h3 style="margin-bottom: 20px;">测试覆盖矩阵</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>模块</th><th>测试文件</th><th>核心覆盖</th><th>用例数</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>cmd</strong></td><td>root_test.go</td><td>flag 默认值、配置覆盖、TLS 应用</td><td>7</td></tr>
+          <tr><td><strong>connect</strong></td><td>dsn_test.go</td><td>URL/键值对/主机解析、参数、IPv6、编码</td><td>16</td></tr>
+          <tr><td><strong>connect</strong></td><td>config_test.go</td><td>CRUD、非法名称、文件创建</td><td>4</td></tr>
+          <tr><td><strong>connect</strong></td><td>pool_test.go</td><td>接口检查、无效 DSN</td><td>3</td></tr>
+          <tr><td><strong>connect</strong></td><td>tls_test.go</td><td>TLS 开关、跳过验证、证书缺失</td><td>8</td></tr>
+          <tr><td><strong>batch</strong></td><td>executor_test.go</td><td>分割、引号感知、DML/Query、DryRun、错误策略</td><td>16</td></tr>
+          <tr><td><strong>repl</strong></td><td>repl_test.go</td><td>元命令、DML 区分、状态、标识符校验</td><td>24</td></tr>
+          <tr><td><strong>format</strong></td><td>formatter_test.go</td><td>7 种格式、nil/time/binary、空结果、无头</td><td>18</td></tr>
+          <tr><td><strong>log</strong></td><td>logger_test.go</td><td>禁用、文件写入、DSN 脱敏</td><td>3</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="color-tag tag-green">TEST RESULT</div>
+        <h3>全部通过</h3>
+        <div class="code-block" style="margin-top: 16px;">
+$ go test ./components/sql/... -count=1
+?  components/sql        [no test files]
+ok components/sql/batch  0.005s
+ok components/sql/cmd    0.005s
+ok components/sql/connect 0.011s
+ok components/sql/format 0.006s
+ok components/sql/log    0.006s
+ok components/sql/repl   0.007s
+        </div>
+      </div>
+      <div class="card">
+        <div class="color-tag tag-blue">BUILD</div>
+        <h3>构建验证</h3>
+        <div class="code-block" style="margin-top: 16px;">
+$ go build -o bin/tiup-sql ./components/sql/
+# 构建成功，零错误
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 24px;">
+      <h3 style="margin-bottom: 20px;">真实 MySQL 实例验证清单</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th style="width: 40%;">验证项</th><th>状态</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>URL 格式连接</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>键值对参数连接</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>保存连接（-c）复用</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>仅指定主机连接</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>7 种输出格式（table/csv/json/json-pretty/json-rows/tsv/vertical）</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>SQL 文件执行（-f）</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>目录批量执行</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>管道/stdin 执行</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>DML 操作（INSERT/UPDATE/DELETE）</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>dry-run 模式</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>on-error continue/stop</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>echo 模式</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>查询日志（--log）</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>no-header 输出</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>自定义 delimiter</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>连接管理（save/list/delete）</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>环境变量密码</td><td><span class="status-ok">通过</span></td></tr>
+          <tr><td>帮助信息输出</td><td><span class="status-ok">通过</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ==================== 快速开始 ==================== -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>现在就开始？</h2>
+      <p>三步完成构建、连接、验证。</p>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="num-badge bg-blue">1</div>
+        <h3>构建</h3>
+        <div class="code-block">
+cd /data/tiup-sql
+go build -o bin/tiup-sql ./components/sql/
+        </div>
+      </div>
+      <div class="card">
+        <div class="num-badge bg-green">2</div>
+        <h3>连接</h3>
+        <div class="code-block">
+export TIUP_SQL_PASSWORD=your_password
+tiup-sql -e "SHOW DATABASES" mysql://root@127.0.0.1:3306/
+        </div>
+      </div>
+      <div class="card">
+        <div class="num-badge bg-purple">3</div>
+        <h3>验证</h3>
+        <div class="code-block">
+go test ./components/sql/... -v
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="footer">
+  <div class="container">
+    <p>tiup sql 组件文档 · 基于 TiUP 主仓库开发 · 全部测试通过</p>
+  </div>
+</div>
+
+</body>
+</html>

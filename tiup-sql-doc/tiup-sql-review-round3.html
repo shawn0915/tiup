@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>tiup sql 第三轮评审报告（最终汇总）</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">body{font-family:"Segoe UI",system-ui,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1a1a1a}
+h1{border-bottom:2px solid #4472C4;padding-bottom:.3em;color:#4472C4}
+h2{border-bottom:1px solid #ddd;padding-bottom:.2em;margin-top:2em}
+h3{color:#5b9bd5}
+table{border-collapse:collapse;width:100%;margin:1em 0}
+th,td{border:1px solid #ddd;padding:.5em .75em;text-align:left}
+th{background:#f5f5f5;font-weight:600}
+tr:nth-child(even){background:#fafafa}
+code{background:#f4f4f4;padding:.15em .3em;border-radius:3px;font-size:.9em}
+pre{background:#2d2d2d;color:#f8f8f2;padding:1em;border-radius:6px;overflow-x:auto}
+pre code{background:none;padding:0;color:inherit}
+blockquote{border-left:4px solid #4472C4;padding:.5em 1em;margin:1em 0;background:#f9f9f9}
+ul,ol{padding-left:1.5em}
+#TOC{background:#f5f7fa;padding:1em 1.5em;border-radius:8px;margin-bottom:2em}
+#TOC ul{list-style:none;padding-left:0}
+#TOC>ul{padding-left:1em}
+#TOC li{margin:.3em 0}
+a{color:#4472C4;text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid #ddd;margin:2em 0}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">tiup sql 第三轮评审报告（最终汇总）</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#tiup-sql-第三轮评审报告最终汇总" id="toc-tiup-sql-第三轮评审报告最终汇总">tiup sql
+第三轮评审报告（最终汇总）</a>
+<ul>
+<li><a href="#审查结论" id="toc-审查结论">审查结论</a></li>
+<li><a href="#本轮审查结果" id="toc-本轮审查结果">本轮审查结果</a>
+<ul>
+<li><a href="#源码变更检查" id="toc-源码变更检查">1.
+源码变更检查</a></li>
+<li><a href="#安全合规全面复查" id="toc-安全合规全面复查">2.
+安全合规全面复查</a></li>
+<li><a href="#已知低优先级遗留项" id="toc-已知低优先级遗留项">3.
+已知低优先级遗留项</a></li>
+<li><a href="#三轮评审累计统计" id="toc-三轮评审累计统计">4.
+三轮评审累计统计</a></li>
+<li><a href="#设计文档符合度" id="toc-设计文档符合度">5.
+设计文档符合度</a></li>
+<li><a href="#测试覆盖" id="toc-测试覆盖">6. 测试覆盖</a></li>
+</ul></li>
+<li><a href="#最终建议" id="toc-最终建议">最终建议</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="tiup-sql-第三轮评审报告最终汇总">tiup sql
+第三轮评审报告（最终汇总）</h1>
+<p><strong>评审人</strong>：全能表妹（安全审计）
+<strong>评审时间</strong>：2026-05-18
+<strong>评审范围</strong>：<code>components/sql/</code>
+全部源码及测试文件，<code>tiup-sql.md</code> 变更文档
+<strong>前置条件</strong>：前两轮共发现 19+10 项问题，其中 10
+项阻断/高/中已修复验证通过</p>
+<hr />
+<h2 id="审查结论">审查结论</h2>
+<p><strong>代码安全合规，无阻断或高严重度问题。可以进入编译验证和集成测试阶段。</strong></p>
+<hr />
+<h2 id="本轮审查结果">本轮审查结果</h2>
+<h3 id="源码变更检查">1. 源码变更检查</h3>
+<p>自第二轮审查以来，无源码文件变更。文件时间戳确认： -
+<code>executor.go</code> — May 18 12:45（第二轮修复时间，未再变更） -
+<code>vertical.go</code> — May 18 12:45 - <code>config_test.go</code> —
+May 18 12:46 - 其余文件 — May 17 17:xx（原始开发时间）</p>
+<h3 id="安全合规全面复查">2. 安全合规全面复查</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>检查项</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>密码不以命令行明文传递</td>
+<td>✅</td>
+<td><code>--password</code> 为 bool flag</td>
+</tr>
+<tr>
+<td>2</td>
+<td>密码交互式密文输入</td>
+<td>✅</td>
+<td>term raw mode，退格正确</td>
+</tr>
+<tr>
+<td>3</td>
+<td>TLS 证书验证默认启用</td>
+<td>✅</td>
+<td><code>InsecureSkipVerify: false</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>--tls-skip-verify</code> 需显式指定</td>
+<td>✅</td>
+<td>Bool flag 默认 false</td>
+</tr>
+<tr>
+<td>5</td>
+<td>元命令 SQL 注入防护</td>
+<td>✅</td>
+<td><code>isValidIdentifier()</code> + 反引号包裹</td>
+</tr>
+<tr>
+<td>6</td>
+<td>日志中密码脱敏</td>
+<td>✅</td>
+<td><code>SanitizedDSN()</code> + <code>sanitizeDSN()</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>连接配置文件权限</td>
+<td>✅</td>
+<td><code>0o600</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>连接配置名称安全</td>
+<td>✅</td>
+<td>非法字符过滤</td>
+</tr>
+<tr>
+<td>9</td>
+<td>SQL 字符串内分号处理</td>
+<td>✅</td>
+<td>引号感知分割</td>
+</tr>
+<tr>
+<td>10</td>
+<td>环境变量密码风险已文档化</td>
+<td>✅</td>
+<td><code>tiup-sql.md</code> S1 节</td>
+</tr>
+<tr>
+<td>11</td>
+<td>DSN 密码 URL 编码</td>
+<td>✅</td>
+<td><code>url.QueryEscape()</code></td>
+</tr>
+<tr>
+<td>12</td>
+<td>Playground 实例发现</td>
+<td>✅</td>
+<td>复用 tiup 现有路径逻辑</td>
+</tr>
+<tr>
+<td>13</td>
+<td>跨平台密码输入</td>
+<td>✅</td>
+<td>build tag 分离 unix/windows</td>
+</tr>
+<tr>
+<td>14</td>
+<td>REPL 信号处理</td>
+<td>✅</td>
+<td>SIGINT/SIGTERM 正确处理</td>
+</tr>
+<tr>
+<td>15</td>
+<td>TLS 配置正确注册</td>
+<td>✅</td>
+<td><code>mysql.RegisterTLSConfig()</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="已知低优先级遗留项">3. 已知低优先级遗留项</h3>
+<p>以下为后续迭代可处理的项目，<strong>不阻塞当前进度</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>严重度</th>
+<th>描述</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>Low</td>
+<td>全局 <code>flags</code> 变量影响测试隔离</td>
+<td>可测试性</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>Low</td>
+<td><code>execQuery()</code> 统一用 <code>Query()</code> 而非区分
+<code>Exec()</code></td>
+<td>性能</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Low</td>
+<td><code>\i</code> 元命令不支持目录路径</td>
+<td>功能一致性</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>Low</td>
+<td><code>formatValue()</code> 对二进制 <code>[]byte</code>
+可能乱码</td>
+<td>显示</td>
+</tr>
+<tr>
+<td>L5</td>
+<td>Low</td>
+<td>测试覆盖仍不足（repl/cmd/tls/pool 无测试）</td>
+<td>工程质量</td>
+</tr>
+<tr>
+<td>L6</td>
+<td>Low</td>
+<td>CJK 字符宽度对齐</td>
+<td>国际化</td>
+</tr>
+<tr>
+<td>L7</td>
+<td>Low</td>
+<td>CSV 缺少 BOM 头</td>
+<td>Excel 兼容性</td>
+</tr>
+<tr>
+<td>N1</td>
+<td>Low</td>
+<td><code>user:pass@host</code> 格式密码含 <code>@</code>
+时解析失败</td>
+<td>边缘兼容</td>
+</tr>
+<tr>
+<td>N2</td>
+<td>Low</td>
+<td><code>readStatements</code> 内二次调用 <code>splitStatements</code>
+冗余</td>
+<td>性能</td>
+</tr>
+<tr>
+<td>N3</td>
+<td>Low</td>
+<td><code>vertical.go</code> 的 <code>maxLabelLen</code> 仍每行计算</td>
+<td>性能</td>
+</tr>
+<tr>
+<td>N4</td>
+<td>Low</td>
+<td>MySQL <code>\&#39;</code> 反斜杠转义未支持</td>
+<td>边缘兼容</td>
+</tr>
+<tr>
+<td>N5</td>
+<td>Low</td>
+<td><code>MaxRows</code> 选项声明但未实现</td>
+<td>功能缺失</td>
+</tr>
+<tr>
+<td>N6</td>
+<td>Low</td>
+<td>配置缓存无过期/失效机制</td>
+<td>健壮性</td>
+</tr>
+<tr>
+<td>N7</td>
+<td>Low</td>
+<td>TLS 注册名同 host:port 重复注册会冲突</td>
+<td>边缘场景</td>
+</tr>
+</tbody>
+</table>
+<h3 id="三轮评审累计统计">4. 三轮评审累计统计</h3>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 15%" />
+<col style="width: 20%" />
+<col style="width: 48%" />
+</colgroup>
+<thead>
+<tr>
+<th>轮次</th>
+<th>发现</th>
+<th>已修复</th>
+<th>未修复（低优先级）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第一轮（<span class="citation" data-cites="元芳">@元芳</span>）</td>
+<td>2 阻断 + 4 高 + 6 中 + 7 低 = 19</td>
+<td>10（阻断+高+部分中）</td>
+<td>9（中+低）</td>
+</tr>
+<tr>
+<td>第二轮（<span class="citation" data-cites="全能表妹">@全能表妹</span>）</td>
+<td>1 高 + 4 中 + 5 低 = 10</td>
+<td>4（高+中）</td>
+<td>6（低）</td>
+</tr>
+<tr>
+<td>第三轮（<span class="citation" data-cites="全能表妹">@全能表妹</span>）</td>
+<td>0 阻断 / 0 高 / 0 中</td>
+<td>0</td>
+<td>0 新增</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>29</strong></td>
+<td><strong>14</strong></td>
+<td><strong>15 低优先级遗留</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="设计文档符合度">5. 设计文档符合度</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>实现状态</th>
+<th>评价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连接管理 — DSN 解析</td>
+<td>✅ 完整</td>
+<td>多格式支持，URL 编码正确</td>
+</tr>
+<tr>
+<td>连接管理 — TLS</td>
+<td>✅ 完整</td>
+<td>证书验证、skip-verify、配置注册</td>
+</tr>
+<tr>
+<td>连接管理 — Playground 发现</td>
+<td>✅ 完整</td>
+<td>复用 tiup 现有逻辑</td>
+</tr>
+<tr>
+<td>连接管理 — 连接配置</td>
+<td>⚠️ 基本完整</td>
+<td>缺密码持久化和缓存失效</td>
+</tr>
+<tr>
+<td>交互式 REPL</td>
+<td>⚠️ 核心功能完整</td>
+<td>缺自动补全、语法高亮、历史持久化</td>
+</tr>
+<tr>
+<td>批量执行</td>
+<td>✅ 完整</td>
+<td>引号感知、错误策略、目录扫描</td>
+</tr>
+<tr>
+<td>输出格式化</td>
+<td>✅ 完整</td>
+<td>6 种格式，表格/CSV/JSON/TSV/垂直</td>
+</tr>
+<tr>
+<td>日志与诊断</td>
+<td>✅ 完整</td>
+<td>查询日志、DSN 脱敏、慢查询提示</td>
+</tr>
+<tr>
+<td>安全设计</td>
+<td>✅ 合规</td>
+<td>密码保护、TLS、SQL 注入防护、日志脱敏</td>
+</tr>
+</tbody>
+</table>
+<h3 id="测试覆盖">6. 测试覆盖</h3>
+<table>
+<thead>
+<tr>
+<th>包</th>
+<th>测试文件</th>
+<th>覆盖</th>
+<th>测试用例数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect</code></td>
+<td><code>dsn_test.go</code></td>
+<td>DSN 解析、URL 编码、脱敏</td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>connect</code></td>
+<td><code>config_test.go</code></td>
+<td>配置 CRUD、名称校验、文件创建</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>format</code></td>
+<td><code>formatter_test.go</code></td>
+<td>6 种格式输出、工厂方法</td>
+<td>9</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td><code>executor_test.go</code></td>
+<td>语句分割、字符串内分号</td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>log</code></td>
+<td><code>logger_test.go</code></td>
+<td>日志记录、脱敏</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>repl</code></td>
+<td>无</td>
+<td>—</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>cmd</code></td>
+<td>无</td>
+<td>—</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>connect/tls</code></td>
+<td>无</td>
+<td>—</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>5</strong></td>
+<td>—</td>
+<td><strong>31</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="最终建议">最终建议</h2>
+<ol type="1">
+<li><strong>立即</strong>：进入编译验证（<code>go build ./components/sql/</code>）和集成测试</li>
+<li><strong>编译通过后</strong>：补充
+<code>repl/</code>、<code>cmd/</code>、<code>connect/tls.go</code>
+的单元测试</li>
+<li><strong>后续迭代</strong>：实现自动补全、语法高亮、历史持久化等高级功能</li>
+</ol>
+<p><strong><span class="citation" data-cites="wdrhhwx">@wdrhhwx</span>
+所有审查汇总完成，无阻断或高严重度问题，代码可以推进到编译验证和集成测试阶段。</strong></p>
+</body>
+</html>
