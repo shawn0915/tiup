@@ -49,8 +49,8 @@ build: tiup components
 	@# Target: build tiup and all it's components
 
 .PHONY: components
-components: playground client cluster dm server
-	@# Target: build the playground, client, cluster, dm and server components
+components: playground client cluster dm server sql
+	@# Target: build the playground, client, cluster, dm, server and sql components
 
 .PHONY: tiup
 tiup:
@@ -87,6 +87,11 @@ ctl:
 server:
 	@# Target: build the tiup-server component
 	$(GOBUILD) -ldflags '$(LDFLAGS)' -o bin/tiup-server ./server
+
+.PHONY: sql
+sql:
+	@# Target: build the tiup-sql component
+	$(GOBUILD) -ldflags '$(LDFLAGS)' -o bin/tiup-sql ./components/sql
 
 .PHONY: check
 check: fmt lint tidy check-static vet

@@ -40,9 +40,9 @@ func (m *mockDB) Query(query string, args ...any) (*sql.Rows, error) {
 }
 
 func (m *mockDB) QueryRow(query string, args ...any) *sql.Row { return nil }
-func (m *mockDB) Close() error                                         { return nil }
-func (m *mockDB) Ping() error                                          { return nil }
-func (m *mockDB) Stats() sql.DBStats                                   { return m.stats }
+func (m *mockDB) Close() error                                { return nil }
+func (m *mockDB) Ping() error                                 { return nil }
+func (m *mockDB) Stats() sql.DBStats                          { return m.stats }
 
 type mockResult struct {
 	lastInsertID int64

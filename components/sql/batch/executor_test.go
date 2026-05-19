@@ -27,12 +27,12 @@ import (
 
 // mockDB implements connect.DB for testing.
 type mockDB struct {
-	queries       []string
-	queryResults  [][]any
-	queryColumns  []string
-	queryErr      error
-	execResults   map[string]sql.Result
-	execErr       error
+	queries      []string
+	queryResults [][]any
+	queryColumns []string
+	queryErr     error
+	execResults  map[string]sql.Result
+	execErr      error
 }
 
 func (m *mockDB) Exec(query string, args ...any) (sql.Result, error) {
@@ -59,8 +59,8 @@ func (m *mockDB) QueryRow(query string, args ...any) *sql.Row {
 	return nil
 }
 
-func (m *mockDB) Close() error  { return nil }
-func (m *mockDB) Ping() error   { return nil }
+func (m *mockDB) Close() error       { return nil }
+func (m *mockDB) Ping() error        { return nil }
 func (m *mockDB) Stats() sql.DBStats { return sql.DBStats{} }
 
 type mockResult struct {
@@ -132,8 +132,8 @@ func TestReadStatements(t *testing.T) {
 			wantCount: 2,
 		},
 		{
-			name: "SQL with comments",
-			input: "-- this is a comment\nSELECT 1;\n-- another comment\nSELECT 2;\n",
+			name:      "SQL with comments",
+			input:     "-- this is a comment\nSELECT 1;\n-- another comment\nSELECT 2;\n",
 			wantCount: 2,
 		},
 		{
@@ -142,8 +142,8 @@ func TestReadStatements(t *testing.T) {
 			wantCount: 2,
 		},
 		{
-			name: "multi-line statement",
-			input: "SELECT id,\n  name,\n  age\nFROM users\nWHERE id > 10;\n",
+			name:      "multi-line statement",
+			input:     "SELECT id,\n  name,\n  age\nFROM users\nWHERE id > 10;\n",
 			wantCount: 1,
 		},
 	}

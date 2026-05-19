@@ -30,12 +30,12 @@ import (
 
 // ExecutorOptions holds configuration for batch execution.
 type ExecutorOptions struct {
-	Delimiter  string
-	OnError    string
-	DryRun     bool
-	Echo       bool
-	Timing     bool
-	MaxRows    int
+	Delimiter string
+	OnError   string
+	DryRun    bool
+	Echo      bool
+	Timing    bool
+	MaxRows   int
 }
 
 // Executor handles batch SQL execution.

@@ -25,6 +25,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/google/uuid"
 	perrs "github.com/pingcap/errors"
+	sqlcmd "github.com/pingcap/tiup/components/sql/cmd"
 	"github.com/pingcap/tiup/pkg/environment"
 	tiupexec "github.com/pingcap/tiup/pkg/exec"
 	"github.com/pingcap/tiup/pkg/localdata"
@@ -85,6 +86,9 @@ the latest stable version will be downloaded from the repository.`,
 				}
 			}
 			switch cmd.Name() {
+			case "sql":
+				// skip environment init for built-in sql component
+				break
 			case "init", "rotate", "set":
 				if cmd.HasParent() && cmd.Parent().Name() == "mirror" {
 					// skip environment init
@@ -175,7 +179,11 @@ the latest stable version will be downloaded from the repository.`,
 			return tiupexec.RunComponent(env, tag, componentSpec, binPath, forcePull, args)
 		},
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
-			return environment.GlobalEnv().Close()
+			env := environment.GlobalEnv()
+			if env == nil {
+				return nil
+			}
+			return env.Close()
 		},
 		SilenceUsage: true,
 		// implement auto completion for tiup components
@@ -229,6 +237,7 @@ the latest stable version will be downloaded from the repository.`,
 		newHistoryCmd(),
 		newLinkCmd(),
 		newUnlinkCmd(),
+		sqlcmd.NewRootCmd(),
 	)
 }
 

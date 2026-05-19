@@ -28,44 +28,44 @@ import (
 )
 
 type globalFlags struct {
-	host          string
-	port          int
-	user          string
-	password      bool
-	database      string
-	socket        string
-	protocol      string
+	host     string
+	port     int
+	user     string
+	password bool
+	database string
+	socket   string
+	protocol string
 
-	tls            bool
-	tlsCA          string
-	tlsCert        string
-	tlsKey         string
-	tlsSkipVerify  bool
+	tls           bool
+	tlsCA         string
+	tlsCert       string
+	tlsKey        string
+	tlsSkipVerify bool
 
-	playground     bool
-	clusterName    string
-	component      string
+	playground  bool
+	clusterName string
+	component   string
 
-	connectionName string
-	saveConnection string
-	listConnections bool
+	connectionName   string
+	saveConnection   string
+	listConnections  bool
 	deleteConnection string
 
-	execute        string
-	files          []string
-	delimiter      string
-	onError        string
-	dryRun         bool
-	echo           bool
-	force          bool
+	execute   string
+	files     []string
+	delimiter string
+	onError   string
+	dryRun    bool
+	echo      bool
+	force     bool
 
-	outputFormat   string
-	noHeader       bool
-	pager          string
-	timing         bool
-	slowThreshold  string
+	outputFormat  string
+	noHeader      bool
+	pager         string
+	timing        bool
+	slowThreshold string
 
-	logFile        string
+	logFile string
 }
 
 var flags globalFlags
@@ -73,7 +73,7 @@ var flags globalFlags
 // NewRootCmd creates the root command for tiup sql.
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "tiup sql [flags] [DSN|connection-name]",
+		Use:   "sql [flags] [DSN|connection-name]",
 		Short: "A universal SQL client for MySQL and TiDB",
 		Long: `tiup sql is a general-purpose SQL client that supports connecting to
 MySQL and TiDB databases. It provides interactive REPL, batch execution,
@@ -263,10 +263,10 @@ func applyFlagOverrides(cfg *connect.DSNConfig) {
 func applyTLSConfig(cfg *connect.DSNConfig) {
 	if flags.tls || flags.tlsCA != "" || flags.tlsCert != "" {
 		cfg.TLSConfig = &connect.TLSConfig{
-			Enabled:   true,
-			CAPath:    flags.tlsCA,
-			CertPath:  flags.tlsCert,
-			KeyPath:   flags.tlsKey,
+			Enabled:    true,
+			CAPath:     flags.tlsCA,
+			CertPath:   flags.tlsCert,
+			KeyPath:    flags.tlsKey,
 			SkipVerify: flags.tlsSkipVerify,
 		}
 	}
@@ -274,12 +274,12 @@ func applyTLSConfig(cfg *connect.DSNConfig) {
 
 func runBatch(ctx context.Context, db connect.DB, formatter format.Formatter, logger *log.QueryLogger) error {
 	executor := batch.NewExecutor(db, formatter, logger, batch.ExecutorOptions{
-		Delimiter:  flags.delimiter,
-		OnError:    flags.onError,
-		DryRun:     flags.dryRun,
-		Echo:       flags.echo,
-		Timing:     flags.timing,
-		MaxRows:    0,
+		Delimiter: flags.delimiter,
+		OnError:   flags.onError,
+		DryRun:    flags.dryRun,
+		Echo:      flags.echo,
+		Timing:    flags.timing,
+		MaxRows:   0,
 	})
 
 	if flags.execute != "" {
@@ -295,10 +295,10 @@ func runBatch(ctx context.Context, db connect.DB, formatter format.Formatter, lo
 
 func runREPL(db connect.DB, formatter format.Formatter, logger *log.QueryLogger) error {
 	r, err := repl.New(db, formatter, logger, repl.Options{
-		Format:       flags.outputFormat,
-		Timing:       flags.timing,
+		Format:        flags.outputFormat,
+		Timing:        flags.timing,
 		SlowThreshold: flags.slowThreshold,
-		Pager:        flags.pager,
+		Pager:         flags.pager,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to initialize REPL: %w", err)
